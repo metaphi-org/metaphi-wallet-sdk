@@ -1,5 +1,5 @@
 {
-  "name": "@metaphi/analyzer",
+  "name": "analyzer",
   "version": "0.0.1-alpha.0",
   "description": "> TODO: description",
   "author": "Akshata <akshatamohanty@gmail.com>",
@@ -17,10 +17,14 @@
     "type": "git",
     "url": "git+https://github.com/metaphi-org/metaphi-api.git"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@metaphi"
+  },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
     "url": "https://github.com/metaphi-org/metaphi-api/issues"
-  }
+  },
+  "gitHead": "f88f3cd49dddfaf2679fb2d9b67864db32e1b401"
 }
