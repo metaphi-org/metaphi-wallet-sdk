@@ -1,6 +1,6 @@
 {
-  "name": "wallets",
-  "version": "0.0.1-alpha.0",
+  "name": "@metaphi/wallets",
+  "version": "0.0.2-alpha.0",
   "description": "> TODO: description",
   "author": "Akshata <akshatamohanty@gmail.com>",
   "homepage": "https://github.com/metaphi-org/metaphi-api#readme",
@@ -26,5 +26,5 @@
   "bugs": {
     "url": "https://github.com/metaphi-org/metaphi-api/issues"
   },
-  "gitHead": "f88f3cd49dddfaf2679fb2d9b67864db32e1b401"
+  "gitHead": "d96a7311c5c9d83d48461608b93026d008344136"
 }
