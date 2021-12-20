@@ -1,0 +1,26 @@
+{
+  "name": "@metaphi/analyzer",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "Akshata <akshatamohanty@gmail.com>",
+  "homepage": "https://github.com/metaphi-org/metaphi-api#readme",
+  "license": "ISC",
+  "main": "lib/nft-analyzer.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/metaphi-org/metaphi-api.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/metaphi-org/metaphi-api/issues"
+  }
+}
