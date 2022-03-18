@@ -1,4 +1,5 @@
 const path = require("path");
+var webpack = require("webpack");
 
 module.exports = {
   mode: "production",
@@ -42,4 +43,9 @@ module.exports = {
       root: "ReactDOM",
     },
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      process: "process/browser",
+    }),
+  ],
 };
