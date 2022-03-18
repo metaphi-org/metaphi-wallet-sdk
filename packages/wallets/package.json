@@ -1,13 +1,13 @@
 {
-  "name": "@metaphi/wallets",
+  "name": "@metaphi/airwallet",
   "version": "0.0.4-alpha.0",
-  "description": "> TODO: description",
+  "description": "Metaphi Airwallet SDK",
   "author": "Akshata <akshatamohanty@gmail.com>",
   "homepage": "https://github.com/metaphi-org/metaphi-api#readme",
   "license": "ISC",
-  "main": "lib/wallets.js",
+  "main": "src/wallets.js",
   "directories": {
-    "lib": "lib",
+    "lib": "src",
     "test": "__tests__"
   },
   "files": [
@@ -21,10 +21,33 @@
     "registry": "https://npm.pkg.github.com/@metaphi"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "webpack"
   },
   "bugs": {
     "url": "https://github.com/metaphi-org/metaphi-api/issues"
   },
-  "gitHead": "26d838cce912e244111e949bd19e6dd2382c7812"
+  "gitHead": "26d838cce912e244111e949bd19e6dd2382c7812",
+  "dependencies": {
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "@babel/preset-stage-0": "^7.8.3",
+    "@emotion/react": "^11.8.2",
+    "@emotion/styled": "^11.8.1",
+    "@mui/material": "^5.5.1",
+    "axios": "^0.26.1",
+    "babel-preset-react": "^6.24.1",
+    "cookies-js": "^1.2.3",
+    "react": "^17.0.2",
+    "webpack-cli": "^4.9.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.21.0",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.2.1"
+  }
 }
