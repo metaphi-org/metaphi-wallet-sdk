@@ -1,11 +1,12 @@
 const path = require("path");
 var webpack = require("webpack");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   mode: "production",
   entry: "./src/index.js",
   output: {
-    path: path.resolve("lib"),
+    path: path.resolve("dist"),
     filename: "index.js",
     libraryTarget: "commonjs2",
   },
@@ -18,7 +19,16 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        include: [
+          path.resolve(__dirname, "styles"),
+          path.resolve(__dirname, "src"),
+        ],
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "postcss-loader",
+          "sass-loader",
+        ],
       },
     ],
   },
@@ -46,6 +56,7 @@ module.exports = {
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": JSON.stringify("development"),
     }),
+    new MiniCssExtractPlugin(),
   ],
   node: {
     Buffer: false,

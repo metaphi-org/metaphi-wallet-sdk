@@ -1,3 +1,5 @@
+import "../styles/globals.css";
+
 import { MetaphiWalletButton } from "./MetaphiWalletButton";
 import Metaphi from "./Metaphi";
 
