@@ -2,10 +2,10 @@ const path = require("path");
 
 module.exports = {
   mode: "production",
-  entry: "./src/Airwallet.js",
+  entry: "./src/index.js",
   output: {
-    path: path.resolve("src"),
-    filename: "Airwallet.js",
+    path: path.resolve("lib"),
+    filename: "index.js",
     libraryTarget: "commonjs2",
   },
   module: {
