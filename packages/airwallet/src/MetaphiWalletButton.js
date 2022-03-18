@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Cookies from "cookies-js";
 import axios from "axios";
 import { MetaphiModal } from "./MetaphiModal";
@@ -52,7 +52,7 @@ const MetaphiWalletButton = ({ email, onWalletConnected, onDisconnect }) => {
   };
 
   return (
-    <React.Fragment>
+    <div>
       <button
         style={{ height: "40px" }}
         className="w-full bg-pink text-white rounded-full p-4 mb-4 text-xl"
@@ -66,7 +66,7 @@ const MetaphiWalletButton = ({ email, onWalletConnected, onDisconnect }) => {
         onClose={onModalClose}
         onConnect={onWalletConnectedCallback}
       />
-    </React.Fragment>
+    </div>
   );
 };
 

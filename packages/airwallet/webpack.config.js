@@ -26,16 +26,12 @@ module.exports = {
     alias: {
       react: path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+      process: "process/browser",
     },
   },
   externals: {
     // Don't bundle react or react-dom
-    react: {
-      commonjs: "react",
-      commonjs2: "react",
-      amd: "React",
-      root: "React",
-    },
+    react: "react",
     "react-dom": {
       commonjs: "react-dom",
       commonjs2: "react-dom",
@@ -51,4 +47,8 @@ module.exports = {
       "process.env.NODE_ENV": JSON.stringify("development"),
     }),
   ],
+  node: {
+    Buffer: false,
+    process: false,
+  },
 };
