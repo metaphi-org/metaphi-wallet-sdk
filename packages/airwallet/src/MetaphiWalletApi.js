@@ -24,7 +24,7 @@ import { Transaction } from "@ethereumjs/tx";
 // Initialization
 const common = new Common({ chain: Chain.Mainnet });
 
-class MetaphiWalletApi {
+class MetaphiWallet {
   /* Static properties */
   // Endpoint for wallets.
   static _METAPHI_WALLET_API = "https://api-staging.metaphi.xyz/v1/wallets";
@@ -132,16 +132,14 @@ class MetaphiWalletApi {
   }
 
   // Sign a message.
-  signTransaction(msg) {
+  signTransaction(transaction) {
     if (!this._privateKey) {
       this._logger("Error signing transaction: Private key missing", "red");
     }
 
     try {
       const txParams = {
-        // to: "0x0000000000000000000000000000000000000000",
-        // value: "0x00",
-        data: msg,
+        ...transaction,
       };
 
       const tx = Transaction.fromTxData(txParams, { common });
@@ -196,19 +194,19 @@ class MetaphiWalletApi {
         this._logger(`Share on device: Not found.`);
       }
 
-      // Retrieve share from dApp.
-      let dAppShare = await this._getShareFromdApp(userCreds);
-      if (dAppShare) {
-        this._logger(`Retrieved share from dApp.`);
-        shares.push(dAppShare);
+      // Retrieve share from Metaphi.
+      let metaphiShare = await this._getShareFromMetaphi(userCreds);
+      if (metaphiShare) {
+        shares.push(metaphiShare);
       }
 
-      // Retrieve backup Metaphi share.
+      // Retrieve backup dApp share.
       // This happens when either the local share or dApp share is missing
       if (shares.length < 2) {
-        let metaphiShare = await this._getShareFromMetaphi(userCreds);
-        if (metaphiShare) {
-          shares.push(metaphiShare);
+        let dAppShare = await this._getShareFromdApp(userCreds);
+        if (dAppShare) {
+          this._logger(`Retrieved share from dApp.`);
+          shares.push(dAppShare);
         }
       }
 
@@ -429,14 +427,8 @@ class MetaphiWalletApi {
 
   // Get share from device.
   _getShareFromDevice(userEmail) {
-    return store.get(`${userEmail}-shard`);
-  }
-
-  // Set share on device.
-  _uploadToDevice(userCreds, share) {
-    const key = `${userCreds.userEmail}-shard`;
-    store.set(key, share);
-    this._logger(`Saved local share on device.`);
+    let share = store.get(`${userEmail}-key-share`);
+    return share;
   }
 
   // Retrive share from dApp.
@@ -491,36 +483,11 @@ class MetaphiWalletApi {
     }
   }
 
-  // Reconstructs the secret key from the two shares.
-  _reconstructWalletFromSecret(symmetric_key, keyShare1, keyShare2) {
-    this._logger(
-      `<br/>Reconstructing secret: <br/>Symmetric Key: ${symmetric_key} <br/>Share1: ${keyShare1} <br/>Share 2: ${keyShare2}`
-    );
-
-    // Reconstruct the private key and return the wallet.
-    const privateKey = sss
-      .combine([
-        Buffer.from(this._aes256_decrypt(keyShare1, symmetric_key), "binary"),
-        Buffer.from(this._aes256_decrypt(keyShare2, symmetric_key), "binary"),
-      ])
-      .toString();
-
-    this._logger(`Succesfully reconstructed secret.`);
-    return privateKey;
-  }
-
-  // Generates the symmetric key from user credentials.
-  _generateSymmetricKey(userCreds) {
-    // Prompt the user for a pin and generate a symmetric key.
-    // This should be protected using faceid, webauthn, etc.
-    // Key must be 32 bytes for aes256.
-    return Buffer.from(
-      crypto
-        .createHash("sha256")
-        .update(userCreds.userEmail + ":" + userCreds.userPin)
-        .digest("hex"),
-      "hex"
-    );
+  // Set share on device.
+  _uploadToDevice(userCreds, share) {
+    const key = `${userCreds.userEmail}-key-share`;
+    store.set(key, share);
+    this._logger(`Saved local share on device.`);
   }
 
   // Uploads share to Metaphi.
@@ -529,10 +496,10 @@ class MetaphiWalletApi {
       this._logger(
         `Uploading share to Metaphi: ${MetaphiWallet._METAPHI_WALLET_SECRET_API}`
       );
-      var data = JSON.stringify({
+      var data = {
         wallet_address: address,
         key_share: share,
-      });
+      };
 
       var config = {
         method: "post",
@@ -563,10 +530,10 @@ class MetaphiWalletApi {
       this._logger(
         `Uploading local share to dApp: ${this._DAPP_WALLET_SECRET_API}`
       );
-      const data = JSON.stringify({
+      const data = {
         key_share: share,
         wallet_address: address,
-      });
+      };
       const config = {
         url: this._DAPP_WALLET_SECRET_API,
         method: "post",
@@ -584,6 +551,18 @@ class MetaphiWalletApi {
       this._logger(`Error uploading share to dApp: ${ex.toString()}`);
       throw ex;
     }
+  }
+
+  // Generates the symmetric key from user credentials.
+  _generateSymmetricKey(userCreds) {
+    const seed = userCreds.userEmail + ":" + userCreds.userPin;
+    // Prompt the user for a pin and generate a symmetric key.
+    // This should be protected using faceid, webauthn, etc.
+    // Key must be 32 bytes for aes256.
+    return Buffer.from(
+      crypto.createHash("sha256").update(seed).digest("hex"),
+      "hex"
+    );
   }
 
   // Encrypts using an AES256 cipher.
@@ -665,6 +644,35 @@ class MetaphiWalletApi {
       privateKey,
     };
   }
+
+  // Reconstructs the secret key from the two shares.
+  _reconstructWalletFromSecret(symmetric_key, keyShare1, keyShare2) {
+    this._logger(
+      `<br/>Reconstructing secret: <br/>Symmetric Key: ${symmetric_key} <br/>Share1: ${keyShare1} <br/>Share 2: ${keyShare2}`
+    );
+
+    // Decrypt shares.
+    const decrypted_shares = [keyShare1, keyShare2].map((share) => {
+      return this._aes256_decrypt(share.toString("binary"), symmetric_key);
+    });
+
+    // Reconstruct the private key and return the wallet.
+    const privateKey = sss
+      .combine([
+        Buffer.from(decrypted_shares[0], "binary"),
+        Buffer.from(decrypted_shares[1], "binary"),
+      ])
+      .toString();
+
+    this._logger(`Succesfully reconstructed secret.`);
+    return privateKey;
+  }
 }
 
-export default MetaphiWalletApi;
+export default MetaphiWallet;
+
+// If loaded as a script.
+if (window) {
+  console.log("Metaphi Wallet loaded in Browser");
+  window.MetaphiWallet = MetaphiWallet;
+}

@@ -1,8 +1,7 @@
 {
   "name": "@metaphi/airwallet",
-  "version": "0.0.10-alpha.0",
+  "version": "0.0.11",
   "description": "Metaphi Airwallet SDK",
-  "author": "Akshata <akshatamohanty@gmail.com>",
   "homepage": "https://github.com/metaphi-org/metaphi-api#readme",
   "license": "MIT",
   "main": "dist/index.js",
