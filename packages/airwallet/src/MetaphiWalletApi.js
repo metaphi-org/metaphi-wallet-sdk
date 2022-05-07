@@ -24,15 +24,15 @@ import { Transaction } from "@ethereumjs/tx";
 // Initialization
 const common = new Common({ chain: Chain.Mainnet });
 
-class MetaphiWallet {
+class MetaphiWalletApi {
   /* Static properties */
   // Endpoint for wallets.
-  static _METAPHI_WALLET_API = "https://api-staging.metaphi.xyz/v1/wallets";
+  _METAPHI_WALLET_API = "https://api-staging.metaphi.xyz/v1/wallets";
   // Endpoint for wallet verification.
-  static _METAPHI_WALLET_VERIFY_API =
+  _METAPHI_WALLET_VERIFY_API =
     "https://api-staging.metaphi.xyz/v1/wallets/verify";
   // Endpoint that exposes Metaphi Secret API.
-  static _METAPHI_WALLET_SECRET_API =
+  _METAPHI_WALLET_SECRET_API =
     "https://api-staging.metaphi.xyz/v1/wallets/secret";
   // Endpoint that exposes the dApp Secret API.
   _DAPP_WALLET_SECRET_API = null;
@@ -285,7 +285,7 @@ class MetaphiWallet {
         body: raw,
         redirect: "follow",
       };
-      const URL = MetaphiWallet._METAPHI_WALLET_API;
+      const URL = this._METAPHI_WALLET_API;
       const response = await fetch(URL, requestOptions);
       const wallet = await response.json();
       this._logger("Retrieved wallet.");
@@ -304,7 +304,7 @@ class MetaphiWallet {
 
         // Verify code.
         // TODO: Switch to axios.
-        const URL = MetaphiWallet._METAPHI_WALLET_VERIFY_API;
+        const URL = this._METAPHI_WALLET_VERIFY_API;
         let raw = JSON.stringify({
           email: userId,
           verification_code: verificationCode,
@@ -459,21 +459,18 @@ class MetaphiWallet {
   // Retrieve share from Metaphi.
   async _getShareFromMetaphi(userCreds) {
     this._logger(
-      `Fetch share from Metaphi: ${MetaphiWallet._METAPHI_WALLET_SECRET_API}`
+      `Fetch share from Metaphi: ${this._METAPHI_WALLET_SECRET_API}`
     );
 
     try {
-      const response = await axios.get(
-        MetaphiWallet._METAPHI_WALLET_SECRET_API,
-        {
-          headers: {
-            Authorization: `Bearer ${userCreds.authorizedJwt}`,
-            "Content-Type": "application/json",
-            "X-Metaphi-Api-Key": this._clientApiKey,
-            "x-metaphi-account-id": this._clientId,
-          },
-        }
-      );
+      const response = await axios.get(this._METAPHI_WALLET_SECRET_API, {
+        headers: {
+          Authorization: `Bearer ${userCreds.authorizedJwt}`,
+          "Content-Type": "application/json",
+          "X-Metaphi-Api-Key": this._clientApiKey,
+          "x-metaphi-account-id": this._clientId,
+        },
+      });
       if (response.data.key_share.length)
         this._logger(`Fetched share from Metaphi.`);
       else this._logger(`Fetched empty share from Metaphi.`, "red");
@@ -494,7 +491,7 @@ class MetaphiWallet {
   async _uploadToMetaphi(userCreds, address, share) {
     try {
       this._logger(
-        `Uploading share to Metaphi: ${MetaphiWallet._METAPHI_WALLET_SECRET_API}`
+        `Uploading share to Metaphi: ${this._METAPHI_WALLET_SECRET_API}`
       );
       var data = {
         wallet_address: address,
@@ -503,7 +500,7 @@ class MetaphiWallet {
 
       var config = {
         method: "post",
-        url: MetaphiWallet._METAPHI_WALLET_SECRET_API,
+        url: this._METAPHI_WALLET_SECRET_API,
         headers: {
           Authorization: `Bearer ${userCreds.authorizedJwt}`,
           "Content-Type": "application/json",
@@ -669,10 +666,10 @@ class MetaphiWallet {
   }
 }
 
-export default MetaphiWallet;
+export default MetaphiWalletApi;
 
 // If loaded as a script.
 if (window) {
   console.log("Metaphi Wallet loaded in Browser");
-  window.MetaphiWallet = MetaphiWallet;
+  window.MetaphiWalletApi = MetaphiWalletApi;
 }
