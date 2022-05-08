@@ -10,8 +10,6 @@
  *
  */
 
-"use strict";
-
 // Device
 import axios from "axios";
 import store from "store";
@@ -22,10 +20,10 @@ import crypto from "crypto";
 // Wallets & Transactions
 import EthereumWallet from "ethereumjs-wallet";
 import Common, { Chain } from "@ethereumjs/common";
-import Tx from "@ethereumjs/tx";
+import { Transaction } from "@ethereumjs/tx";
 // Initialization
-const Transaction = Tx.Transaction;
-const common = new Common.default({ chain: Chain.Mainnet });
+const common = new Common({ chain: Chain.Mainnet });
+
 class MetaphiWalletApi {
   /* Static properties */
   // Endpoint for wallets.
@@ -429,6 +427,27 @@ class MetaphiWalletApi {
     store.remove(`${ID}-wallet`);
   };
 
+  _getWalletDetails = async (jwt) => {
+    this._logger(`Fetch wallet details: ${this._METAPHI_WALLET_API}`);
+    try {
+      const response = await axios.get(this._METAPHI_WALLET_API, {
+        api_key: { api_key: this._clientApiKey },
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+          "X-Metaphi-Api-Key": this._clientApiKey,
+          "x-metaphi-account-id": this._clientId,
+        },
+      });
+      if (response.data.key_share.length)
+        this._logger(`Fetched share from dApp.`);
+      else this._logger(`Fetched empty share from dApp.`, "red");
+      return response.data.key_share;
+    } catch (ex) {
+      this._logger(`Error fetching share from dApp ${ex.toString()}`);
+    }
+  };
+
   // Get share from device.
   _getShareFromDevice = (userEmail) => {
     let share = store.get(`${userEmail}-key-share`);
@@ -494,17 +513,15 @@ class MetaphiWalletApi {
   // Uploads share to Metaphi.
   _uploadToMetaphi = async (userCreds, address, share) => {
     try {
-      this._logger(
-        `Uploading share to Metaphi: ${this._METAPHI_WALLET_SECRET_API}`
-      );
+      this._logger(`Uploading share to Metaphi: ${this._METAPHI_WALLET_API}`);
       var data = {
-        wallet_address: address,
+        address: address,
         key_share: share,
       };
 
       var config = {
         method: "post",
-        url: this._METAPHI_WALLET_SECRET_API,
+        url: "https://api-staging.metaphi.xyz/v1/wallets/secret", //this._METAPHI_WALLET_API,
         headers: {
           Authorization: `Bearer ${userCreds.authorizedJwt}`,
           "Content-Type": "application/json",
@@ -598,7 +615,7 @@ class MetaphiWalletApi {
   // Creates a new wallet.
   _createNewWallet = async (userCreds) => {
     // Generate a wallet
-    const EthWallet = EthereumWallet.default.generate();
+    const EthWallet = EthereumWallet.generate();
     const address = EthWallet.getAddressString();
     const privateKey = EthWallet.getPrivateKeyString();
 
@@ -613,7 +630,9 @@ class MetaphiWalletApi {
     const encrypted_shares = shares.map((share) =>
       this._aes256_encrypt(share.toString("binary"), symmetric_key)
     );
-    this._logger(`Generated Encrypted shares: ${encrypted_shares.length}`);
+    this._logger(
+      `Generated Encrypted shares: ${encrypted_shares.length} \n${encrypted_shares[0]}\n\n${encrypted_shares[1]}\n\n${encrypted_shares[2]}}`
+    );
 
     // Upload shares.
     let uploadedShareCount = 0;
@@ -649,7 +668,7 @@ class MetaphiWalletApi {
   // Reconstructs the secret key from the two shares.
   _reconstructWalletFromSecret = (symmetric_key, keyShare1, keyShare2) => {
     this._logger(
-      `<br/>Reconstructing secret: <br/>Symmetric Key: ${symmetric_key} <br/>Share1: ${keyShare1} <br/>Share 2: ${keyShare2}`
+      `Reconstructing secret:\n\nSymmetric Key: ${symmetric_key}\n\nShare1: ${keyShare1} \n\nShare 2: ${keyShare2}`
     );
 
     // Decrypt shares.

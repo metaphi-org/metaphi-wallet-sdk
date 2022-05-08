@@ -1,13 +1,16 @@
-const path = require("path");
-var webpack = require("webpack");
+import path from "path";
+import webpack from "webpack";
 
-module.exports = {
+const webpackConfig = {
   mode: "production",
-  entry: "./src/index.js",
+  entry: "./lib/airwallet-api.js",
   output: {
     path: path.resolve("dist"),
     filename: "index.js",
     libraryTarget: "commonjs2",
+  },
+  experiments: {
+    outputModule: true,
   },
   module: {
     rules: [
@@ -32,8 +35,6 @@ module.exports = {
       "process.env.NODE_ENV": JSON.stringify("development"),
     }),
   ],
-  node: {
-    Buffer: false,
-    process: false,
-  },
 };
+
+export default webpackConfig;
