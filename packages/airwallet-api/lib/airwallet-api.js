@@ -13,21 +13,19 @@
 "use strict";
 
 // Device
-const store = require("store");
-const Cookies = require("js-cookie");
+import axios from "axios";
+import store from "store";
+import Cookies from "js-cookie";
 // Cryptography
-const sss = require("shamirs-secret-sharing");
-const crypto = require("crypto");
+import sss from "shamirs-secret-sharing";
+import crypto from "crypto";
 // Wallets & Transactions
-const EthereumWallet = require("ethereumjs-wallet");
+import EthereumWallet from "ethereumjs-wallet";
 import Common, { Chain } from "@ethereumjs/common";
-import { Transaction } from "@ethereumjs/tx";
-// Generic
-const axios = require("axios");
-
+import Tx from "@ethereumjs/tx";
 // Initialization
-const common = new Common({ chain: Chain.Mainnet });
-
+const Transaction = Tx.Transaction;
+const common = new Common.default({ chain: Chain.Mainnet });
 class MetaphiWalletApi {
   /* Static properties */
   // Endpoint for wallets.
