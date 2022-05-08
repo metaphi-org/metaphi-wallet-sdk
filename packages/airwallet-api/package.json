@@ -1,6 +1,6 @@
 {
   "name": "airwallet-api",
-  "version": "0.0.1-alpha",
+  "version": "0.0.1-alpha.1",
   "description": "Metaphi Airwallet API to add whitelabel, non-custodial wallets to dApps",
   "keywords": [
     "blockchain",

@@ -70,7 +70,8 @@ class MetaphiWalletApi {
 
     // Custom functions.
     this._logger = custom?.logger || console.log;
-    this._userPinFunction = custom?.userPinFunction || this.defaultUserPinFn;
+    this._userPinFunction =
+      custom?.userPinFunction || this.defaultUserPinFunction;
 
     // User Id
     this._userId = null;
@@ -78,7 +79,7 @@ class MetaphiWalletApi {
 
   /* Public methods */
   // Login Metaphi wallet
-  async login(userId) {
+  login = async (userId) => {
     // Persist user id.
     this._userId = userId;
 
@@ -113,15 +114,16 @@ class MetaphiWalletApi {
     } catch (ex) {
       this._logger(`Error connecting wallet: ${ex.toString()}`);
     }
-  }
+  };
 
   // Get public address of wallet.
-  getAddress() {
+  getAddress = () => {
+    console.log(this);
     this._logger(`Connected Wallet Address: ${this._publicAddress}`);
     return this._publicAddress;
-  }
+  };
 
-  async createNewWallet() {
+  createNewWallet = async () => {
     // If the public address does not exist or minimum shares are not met
     //    a. Generate the wallet key and address locally.
     //    b. Break it up into three parts, encrypt using symmetric key.
@@ -133,10 +135,10 @@ class MetaphiWalletApi {
 
     // Setup wallet.
     this._setupWallet(wallet);
-  }
+  };
 
   // Sign a message.
-  signTransaction(transaction) {
+  signTransaction = (transaction) => {
     if (!this._privateKey) {
       this._logger("Error signing transaction: Private key missing", "red");
     }
@@ -155,16 +157,16 @@ class MetaphiWalletApi {
     } catch (ex) {
       this._logger(`Error signing transaction: ${ex.toString()}`);
     }
-  }
+  };
 
   // Disconnect
-  disconnect() {
+  disconnect = () => {
     this._reset();
-  }
+  };
 
   /* Factory methods */
   // Recovers a wallet using the secret shares stored in Metaphi and the dApp.
-  async recoverOrCreateWallet(userCreds) {
+  recoverOrCreateWallet = async (userCreds) => {
     // Public Address & Email of the user
     const { publicAddress, userEmail } = userCreds;
 
@@ -237,17 +239,17 @@ class MetaphiWalletApi {
 
     // Return reconstructed wallet.
     return wallet;
-  }
+  };
 
   // Default function to retrieve user credential.
   // Override, with dApp functionality.
-  async defaultUserPinFunction() {
+  defaultUserPinFunction = async () => {
     const userPin = prompt("Please enter your secret pin", "1234");
     return userPin;
-  }
+  };
 
   /* Private methods */
-  _reset() {
+  _reset = async () => {
     /** Empty Caches. */
     // Authentication
     this._resetAuthenticatedJwt();
@@ -264,9 +266,9 @@ class MetaphiWalletApi {
     this._userId = null;
 
     this._logger("Wallet disconnected.");
-  }
+  };
 
-  async _triggerManualAuthentication(userId) {
+  _triggerManualAuthentication = async (userId) => {
     this._logger("User is not logged in. Triggering authentication flow");
 
     let myHeaders = new Headers();
@@ -341,18 +343,18 @@ class MetaphiWalletApi {
     this._setAuthenticatedJwt(jwt);
 
     return authenticated;
-  }
+  };
 
   // Connect Metaphi Wallet
-  async _connectWallet(userId) {
+  _connectWallet = async (userId) => {
     const userCreds = await this._getUserCreds(userId);
     const wallet = await this.recoverOrCreateWallet(userCreds);
 
     // Setup wallet.
     this._setupWallet(wallet);
-  }
+  };
 
-  async _getUserCreds(userId, isNewWallet) {
+  _getUserCreds = async (userId, isNewWallet) => {
     // Get user pin.
     // Prompt the user for a pin and generate a symmetric key.
     // This should be protected using faceid, webauthn, etc.
@@ -371,9 +373,9 @@ class MetaphiWalletApi {
     };
 
     return userCreds;
-  }
+  };
 
-  _setupWallet(wallet) {
+  _setupWallet = (wallet) => {
     // If the wallet address has changed, update user
     if (wallet.address !== this._publicAddress) {
       // TODO: Handle this case, NS to comment
@@ -392,51 +394,51 @@ class MetaphiWalletApi {
 
     // Persist private key.
     this._privateKey = wallet.privateKey;
-  }
+  };
 
-  _getAuthenticatedJwt() {
+  _getAuthenticatedJwt = () => {
     const ID = this._userId;
     const cookieName = `${ID}-jwt`;
     return Cookies.get(cookieName);
-  }
+  };
 
-  _setAuthenticatedJwt(jwt) {
+  _setAuthenticatedJwt = (jwt) => {
     const ID = this._userId;
     const cookieName = `${ID}-jwt`;
     Cookies.set(cookieName, jwt, { expires: 1, path: "" }); // Expires in 1 day
-  }
+  };
 
-  _resetAuthenticatedJwt() {
+  _resetAuthenticatedJwt = () => {
     const ID = this._userId;
     const cookieName = `${ID}-jwt`;
     Cookies.remove(cookieName, { path: "" });
-  }
+  };
 
   // Set public address.
-  _getCachedPublicAddress() {
+  _getCachedPublicAddress = () => {
     const ID = this._userId;
     return store.get(`${ID}-wallet`);
-  }
+  };
 
   // Get cached public address.
-  _setCachedPublicAddress(address) {
+  _setCachedPublicAddress = (address) => {
     const ID = this._userId;
     store.set(`${ID}-wallet`, address);
-  }
+  };
 
-  _resetCachedPublicAddress() {
+  _resetCachedPublicAddress = () => {
     const ID = this._userId;
     store.remove(`${ID}-wallet`);
-  }
+  };
 
   // Get share from device.
-  _getShareFromDevice(userEmail) {
+  _getShareFromDevice = (userEmail) => {
     let share = store.get(`${userEmail}-key-share`);
     return share;
-  }
+  };
 
   // Retrive share from dApp.
-  async _getShareFromdApp(userCreds) {
+  _getShareFromdApp = async (userCreds) => {
     this._logger(`Fetch share from dApp: ${this._DAPP_WALLET_SECRET_API}`);
     try {
       const response = await axios.get(this._DAPP_WALLET_SECRET_API, {
@@ -458,10 +460,10 @@ class MetaphiWalletApi {
     } catch (ex) {
       this._logger(`Error fetching share from dApp ${ex.toString()}`);
     }
-  }
+  };
 
   // Retrieve share from Metaphi.
-  async _getShareFromMetaphi(userCreds) {
+  _getShareFromMetaphi = async (userCreds) => {
     this._logger(
       `Fetch share from Metaphi: ${this._METAPHI_WALLET_SECRET_API}`
     );
@@ -482,17 +484,17 @@ class MetaphiWalletApi {
     } catch (ex) {
       this._logger(`Error fetching share from Metaphi: ${ex.toString()}`);
     }
-  }
+  };
 
   // Set share on device.
-  _uploadToDevice(userCreds, share) {
+  _uploadToDevice = (userCreds, share) => {
     const key = `${userCreds.userEmail}-key-share`;
     store.set(key, share);
     this._logger(`Saved local share on device.`);
-  }
+  };
 
   // Uploads share to Metaphi.
-  async _uploadToMetaphi(userCreds, address, share) {
+  _uploadToMetaphi = async (userCreds, address, share) => {
     try {
       this._logger(
         `Uploading share to Metaphi: ${this._METAPHI_WALLET_SECRET_API}`
@@ -519,10 +521,10 @@ class MetaphiWalletApi {
       this._logger(`Error uploading share to Metaphi: ${ex.toString()}`);
       throw ex;
     }
-  }
+  };
 
   // Uploads share to dApp.
-  async _uploadTodApp(userCreds, address, share) {
+  _uploadTodApp = async (userCreds, address, share) => {
     // TODO: We assume for now that the dApp access to their
     // secret share contract is via Metaphi. We will also support
     // the dApps hosting their own contract gateway in the future.
@@ -552,10 +554,10 @@ class MetaphiWalletApi {
       this._logger(`Error uploading share to dApp: ${ex.toString()}`);
       throw ex;
     }
-  }
+  };
 
   // Generates the symmetric key from user credentials.
-  _generateSymmetricKey(userCreds) {
+  _generateSymmetricKey = (userCreds) => {
     const seed = userCreds.userEmail + ":" + userCreds.userPin;
     // Prompt the user for a pin and generate a symmetric key.
     // This should be protected using faceid, webauthn, etc.
@@ -564,20 +566,20 @@ class MetaphiWalletApi {
       crypto.createHash("sha256").update(seed).digest("hex"),
       "hex"
     );
-  }
+  };
 
   // Encrypts using an AES256 cipher.
-  _aes256_encrypt(value, key) {
+  _aes256_encrypt = (value, key) => {
     var ivlength = 16; // AES blocksize
     var iv = crypto.randomBytes(ivlength);
     var cipher = crypto.createCipheriv("aes256", key, iv);
     var encrypted = cipher.update(value, "binary", "binary");
     encrypted += cipher.final("binary");
     return iv.toString("binary") + ":" + encrypted;
-  }
+  };
 
   // Decrypts using an AES256 cipher.
-  _aes256_decrypt(ciphertext, key) {
+  _aes256_decrypt = (ciphertext, key) => {
     var components = ciphertext.split(":");
     var iv_from_ciphertext = Buffer.from(components.shift(), "binary");
     try {
@@ -593,10 +595,10 @@ class MetaphiWalletApi {
       this._logger("Error: ", err);
       console.log("IV: ", iv_from_ciphertext);
     }
-  }
+  };
 
   // Creates a new wallet.
-  async _createNewWallet(userCreds) {
+  _createNewWallet = async (userCreds) => {
     // Generate a wallet
     const EthWallet = EthereumWallet.default.generate();
     const address = EthWallet.getAddressString();
@@ -644,10 +646,10 @@ class MetaphiWalletApi {
       address,
       privateKey,
     };
-  }
+  };
 
   // Reconstructs the secret key from the two shares.
-  _reconstructWalletFromSecret(symmetric_key, keyShare1, keyShare2) {
+  _reconstructWalletFromSecret = (symmetric_key, keyShare1, keyShare2) => {
     this._logger(
       `<br/>Reconstructing secret: <br/>Symmetric Key: ${symmetric_key} <br/>Share1: ${keyShare1} <br/>Share 2: ${keyShare2}`
     );
@@ -667,7 +669,7 @@ class MetaphiWalletApi {
 
     this._logger(`Succesfully reconstructed secret.`);
     return privateKey;
-  }
+  };
 }
 
 export default MetaphiWalletApi;
