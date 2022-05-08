@@ -669,9 +669,3 @@ class MetaphiWalletApi {
 }
 
 export default MetaphiWalletApi;
-
-// If loaded as a script.
-if (window) {
-  console.log("Metaphi Wallet loaded in Browser");
-  window.MetaphiWalletApi = MetaphiWalletApi;
-}
