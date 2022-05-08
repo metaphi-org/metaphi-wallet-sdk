@@ -20,6 +20,8 @@ const crypto = require("crypto");
 const EthereumWallet = require("ethereumjs-wallet");
 import Common, { Chain } from "@ethereumjs/common";
 import { Transaction } from "@ethereumjs/tx";
+// Generic
+const axios = require("axios");
 
 // Initialization
 const common = new Common({ chain: Chain.Mainnet });
@@ -48,7 +50,7 @@ class MetaphiWalletApi {
 
   // Additional features.
   _logger = console.log;
-  _userPinFunction;
+  _userPinFunction = this.defaultUserPinFunction;
 
   constructor(options) {
     const { accountConfig, custom } = options;
