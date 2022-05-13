@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const airwalletApi = require('..');
+const airwalletApi = require("..");
 
-describe('airwallet-api', () => {
-    it('needs tests');
+describe("airwallet-api", () => {
+  it("needs tests");
 });

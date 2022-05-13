@@ -47,6 +47,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const common = new _common.default({
   chain: _common.Chain.Mainnet
 });
+console.log("Loaded Metaphi Api v0.6-alpha");
 
 class MetaphiWalletApi {
   /* Static properties */
@@ -107,7 +108,13 @@ class MetaphiWalletApi {
     let jwt = this._getAuthenticatedJwt();
 
     if (jwt) {
-      this._logger(`User is already logged in`);
+      const {
+        wallet_id,
+        address
+      } = await this._getUserDetails(jwt);
+      this._publicAddress = address;
+
+      this._logger(`User is already logged in: ${address}`);
     } else {
       const response = await this._triggerManualAuthentication(userId);
 
@@ -118,8 +125,6 @@ class MetaphiWalletApi {
       }
     } // Extract public address.
 
-
-    this._publicAddress = this._getCachedPublicAddress();
 
     this._logger(`Wallet Authenticated: ${this._publicAddress}`); // Connect wallet.
 
@@ -278,10 +283,7 @@ class MetaphiWalletApi {
   _reset = async () => {
     /** Empty Caches. */
     // Authentication
-    this._resetAuthenticatedJwt(); // Cached address.
-
-
-    this._resetCachedPublicAddress();
+    this._resetAuthenticatedJwt();
     /** Reset statics. */
     // Wallet Public Address
 
@@ -354,10 +356,9 @@ class MetaphiWalletApi {
         const {
           address,
           wallet_id
-        } = wallet.wallet; // Save wallet address in cache.
+        } = wallet.wallet; // Set public address
 
-        this._setCachedPublicAddress(address); // TODO: Cache wallet_id instead.
-
+        this._publicAddress = address; // TODO: Cache wallet_id instead.
 
         authenticated = 1;
       } catch (ex) {
@@ -406,9 +407,9 @@ class MetaphiWalletApi {
     // If the wallet address has changed, update user
     if (wallet.address !== this._publicAddress) {
       // TODO: Handle this case, NS to comment
-      this._setCachedPublicAddress(wallet.address);
+      this._publicAddress = wallet.address;
 
-      this._logger(`Public Address changed from ${this._publicAddress} to ${wallet.address}`, "blue");
+      this._logger(`Public Address changed from ${this._publicAddress} to ${wallet.address}`, "red");
 
       console.warn(`Public Address changed from ${this._publicAddress} to ${wallet.address}`);
     } // Persist public key.
@@ -440,24 +441,9 @@ class MetaphiWalletApi {
     _jsCookie.default.remove(cookieName, {
       path: ""
     });
-  }; // Set public address.
+  }; // Get user details from jwt.
 
-  _getCachedPublicAddress = () => {
-    const ID = this._userId;
-    return _store.default.get(`${ID}-wallet`);
-  }; // Get cached public address.
-
-  _setCachedPublicAddress = address => {
-    const ID = this._userId;
-
-    _store.default.set(`${ID}-wallet`, address);
-  };
-  _resetCachedPublicAddress = () => {
-    const ID = this._userId;
-
-    _store.default.remove(`${ID}-wallet`);
-  };
-  _getWalletDetails = async jwt => {
+  _getUserDetails = async jwt => {
     this._logger(`Fetch wallet details: ${this._METAPHI_WALLET_API}`);
 
     try {
@@ -472,8 +458,7 @@ class MetaphiWalletApi {
           "x-metaphi-account-id": this._clientId
         }
       });
-      if (response.data.key_share.length) this._logger(`Fetched share from dApp.`);else this._logger(`Fetched empty share from dApp.`, "red");
-      return response.data.key_share;
+      return response.data.user;
     } catch (ex) {
       this._logger(`Error fetching share from dApp ${ex.toString()}`);
     }
@@ -546,9 +531,8 @@ class MetaphiWalletApi {
         key_share: share
       };
       var config = {
-        method: "post",
-        url: "https://api-staging.metaphi.xyz/v1/wallets/secret",
-        //this._METAPHI_WALLET_API,
+        method: "patch",
+        url: this._METAPHI_WALLET_API,
         headers: {
           Authorization: `Bearer ${userCreds.authorizedJwt}`,
           "Content-Type": "application/json",
@@ -591,8 +575,7 @@ class MetaphiWalletApi {
         data
       };
       const response = await (0, _axios.default)(config);
-
-      this._logger(`Successfully uploaded share to dApp`);
+      if (response.success) this._logger(`Successfully uploaded share to dApp`);else this._logger(`Error uploading share to dApp`);
     } catch (ex) {
       this._logger(`Error uploading share to dApp: ${ex.toString()}`);
 
@@ -607,6 +590,7 @@ class MetaphiWalletApi {
 
     return Buffer.from(_crypto.default.createHash("sha256").update(seed).digest("hex"), "hex");
   }; // Encrypts using an AES256 cipher.
+  // Source: https://stackoverflow.com/questions/59528472/encrypt-decrypt-binary-data-crypto-js
 
   _aes256_encrypt = (value, key) => {
     var ivlength = 16; // AES blocksize
@@ -617,12 +601,15 @@ class MetaphiWalletApi {
 
     var encrypted = cipher.update(value, "binary", "binary");
     encrypted += cipher.final("binary");
-    return iv.toString("binary") + ":" + encrypted;
+    const final = iv.toString("binary") + ":" + encrypted;
+    console.log("IV encrypt----", iv, final.split(":"));
+    return final;
   }; // Decrypts using an AES256 cipher.
 
   _aes256_decrypt = (ciphertext, key) => {
     var components = ciphertext.split(":");
     var iv_from_ciphertext = Buffer.from(components.shift(), "binary");
+    console.log("IV decrypt----", iv_from_ciphertext.toString("binary"));
 
     try {
       var decipher = _crypto.default.createDecipheriv("aes256", key, iv_from_ciphertext);
@@ -631,9 +618,11 @@ class MetaphiWalletApi {
       deciphered += decipher.final("binary");
       return deciphered;
     } catch (err) {
+      console.log(err);
+
       this._logger("Error: ", err);
 
-      console.log("IV: ", iv_from_ciphertext);
+      console.log("IV: ", iv_from_ciphertext, components);
     }
   }; // Creates a new wallet.
 
@@ -641,14 +630,17 @@ class MetaphiWalletApi {
     // Generate a wallet
     const EthWallet = _ethereumjsWallet.default.generate();
 
-    const address = EthWallet.getAddressString();
-    const privateKey = EthWallet.getPrivateKeyString(); // Create secrets from it.
+    const address = "0xfe18eda0e5fe0286fa79b9d723fc5fcf17e0dbb9"; // EthWallet.getAddressString();
+
+    const privateKey = "0x641702f2294dabde5a143782dc9ff359eb4e648827688d1827238c577cbd1c18"; // EthWallet.getPrivateKeyString();
+    // Create secrets from it.
 
     const shares = _shamirsSecretSharing.default.split(privateKey, {
       shares: 3,
       threshold: 2
-    }); // Generate symmetric key
+    });
 
+    console.log(shares); // Generate symmetric key
 
     var symmetric_key = this._generateSymmetricKey(userCreds);
 
@@ -657,8 +649,16 @@ class MetaphiWalletApi {
 
     const encrypted_shares = shares.map(share => this._aes256_encrypt(share.toString("binary"), symmetric_key));
 
-    this._logger(`Generated Encrypted shares: ${encrypted_shares.length} \n${encrypted_shares[0]}\n\n${encrypted_shares[1]}\n\n${encrypted_shares[2]}}`); // Upload shares.
+    this._logger(`Generated Encrypted shares: ${encrypted_shares.length} \n${encrypted_shares[0]}\n\n${encrypted_shares[1]}\n\n${encrypted_shares[2]}}`); // TODO: Remove later
 
+
+    const decrypted_shares = encrypted_shares.map(share => {
+      return this._aes256_decrypt(share.toString("binary"), symmetric_key);
+    });
+
+    const key = this._reconstructWalletFromSecret(symmetric_key, decrypted_shares[2], decrypted_shares[0]);
+
+    console.log("reconstructed key----", key); // Upload shares.
 
     let uploadedShareCount = 0;
 
