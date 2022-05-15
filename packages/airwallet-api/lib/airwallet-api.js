@@ -67,7 +67,6 @@ class MetaphiWalletApi {
 
   // Additional features.
   _logger = console.log;
-  _userPinFunction = this.defaultUserPinFunction;
 
   constructor(options) {
     const { accountConfig, custom } = options;
@@ -85,8 +84,6 @@ class MetaphiWalletApi {
 
     // Custom functions.
     this._logger = custom?.logger || console.log;
-    this._userPinFunction =
-      custom?.userPinFunction || this.defaultUserPinFunction;
 
     // User Id
     this._userId = null;
@@ -95,22 +92,42 @@ class MetaphiWalletApi {
   /* Public methods */
   // Login Metaphi wallet
   login = async (userId) => {
+    this._logger(`Logging in: ${userId}.`);
+
     let response = { verified: false };
 
     // Persist user id.
     this._userId = userId;
 
-    this._logger(`Logging in: ${userId}.`);
+    // Check if logged-in user. Skip verification, if true.
+    let address;
+    let jwt = this._getAuthenticatedJwt();
+    if (jwt) {
+      try {
+        // TODO: When wallet is overriden, this will lead to stale results.
+        const userDetails = await this._getUserDetails(jwt);
+        if (userDetails.username === this._userId) {
+          address = userDetails.address;
+        } else {
+          jwt = null;
+          this._resetAuthenticatedJwt();
+        }
+      } catch (ex) {
+        jwt = null;
+        // Reset expired jwt.
+        this._resetAuthenticatedJwt();
+      }
+    }
 
-    // Get wallet
-    const { jwt, address } = await this._retrieveWallet(userId);
+    // Get wallet.
+    if (!jwt) {
+      const response = await this._retrieveWallet(userId);
+      jwt = response.jwt;
+      address = response.address;
+    }
 
     // Check if logged-in user. Skip verification, if true.
-    if (jwt) {
-      response.verified = true;
-    } else {
-      // Fetch user details from jwt.
-    }
+    response.verified = !!jwt;
 
     // Set public address.
     this._publicAddress = address;
@@ -123,18 +140,23 @@ class MetaphiWalletApi {
 
   // Check if user is logged-in.
   isUserLoggedIn = () => {
-    return !!this._getAuthenticatedJwt();
+    return !!this._userId;
   };
 
-  getCurrentUser = () => {
-    let jwt = this._getAuthenticatedJwt();
-    if (jwt) {
-      this._logger(`User is already logged in: ${address}`);
-      response.verified = true;
-    }
+  getLoggedInUsers = () => {
+    const allCookies = Cookies.get();
+    const cookieNames = Object.keys(allCookies);
+    const emails = [];
+    cookieNames.forEach((key) => {
+      const groups = key.match(/(metaphi-jwt-)(\S*)/);
+      if (groups && groups[2]) {
+        emails.push(groups[2]);
+      }
+    });
+    return emails;
   };
 
-  // Wallet Provider
+  // Wallet Provider.
   getProvider = () => {
     return this._provider;
   };
@@ -146,13 +168,13 @@ class MetaphiWalletApi {
   };
 
   // Create a new wallet for the user. Use with caution.
-  createNewWallet = async () => {
+  createNewWallet = async (userPin) => {
     // If the public address does not exist or minimum shares are not met
     //    a. Generate the wallet key and address locally.
     //    b. Break it up into three parts, encrypt using symmetric key.
     //    c. Store one piece locally, store one piece on the dApp and the final
     //       piece on Metaphi.
-    const userCreds = await this._getUserCreds(this._userId, true);
+    const userCreds = await this._getUserCreds(this._userId, userPin, true);
     const wallet = await this._createNewWallet(userCreds);
     this._logger(`Created New Wallet: ${wallet.address}`, "green");
 
@@ -199,40 +221,16 @@ class MetaphiWalletApi {
     // TODO.
   };
 
-  // Get value in public address.
-  // @return wei.
-  getValue = (network) => {
-    // When no network, use default network.
-    return 0.001;
-  };
-
-  getCurrency = () => {
-    return "MATIC";
-  };
-
-  // Get associated networks.
-  getNetwork = () => {
-    return [];
-  };
-
-  // Get currently connected network.
-  getConnectedNetwork = () => {
-    return "Mumbai Matic Network";
-  };
-
   // Connect wallet.
-  connect = async () => {
+  connect = async (userPin) => {
     // Connect wallet.
     this._logger("Connecting wallet.");
-    try {
-      await this._connectWallet();
-      if (this._publicAddress && this._privateKey) {
-        this._logger("Wallet reconstruction successful. Wallet connected.");
-      } else {
-        this._logger(`Error connecting wallet.`);
-      }
-    } catch (ex) {
-      this._logger(`Error connecting wallet: ${ex.toString()}`);
+    await this._connectWallet(userPin);
+    if (this._publicAddress && this._privateKey) {
+      this._logger("Wallet reconstruction successful. Wallet connected.");
+    } else {
+      this._logger(`Error connecting wallet.`);
+      throw new Error("Wallet Reconstruction Unsuccessful.");
     }
   };
 
@@ -362,7 +360,7 @@ class MetaphiWalletApi {
       this._publicAddress = address;
 
       // Set jwt authorization
-      this._setAuthenticatedJwt(userId, jwt);
+      this._setAuthenticatedJwt(jwt);
 
       return authenticated;
     }
@@ -439,7 +437,7 @@ class MetaphiWalletApi {
       } = wallet;
 
       // Set jwt.
-      this._setAuthenticatedJwt(userId, jwt);
+      this._setAuthenticatedJwt(jwt);
 
       // Set public address.
       this._publicAddress = address;
@@ -454,22 +452,24 @@ class MetaphiWalletApi {
   };
 
   // Connect Metaphi Wallet
-  _connectWallet = async () => {
+  _connectWallet = async (userPin) => {
     const userId = this._userId;
-    const userCreds = await this._getUserCreds(userId);
+    const userCreds = await this._getUserCreds(userId, userPin);
     const wallet = await this.recoverOrCreateWallet(userCreds);
 
     // Setup wallet.
     this._setupWallet(wallet);
   };
 
-  _getUserCreds = async (userId, isNewWallet) => {
+  _getUserCreds = async (userId, userPin, isNewWallet) => {
+    if (!userPin) {
+      throw new Error("User pin unknown.");
+    }
     // Get user pin.
     // Prompt the user for a pin and generate a symmetric key.
     // This should be protected using faceid, webauthn, etc.
     // Key must be 32 bytes for aes256.
     this._logger("Retrieving user credential.");
-    const userPin = await this._userPinFunction();
 
     // Retrieve reconstructed wallet.
     this._logger("Reconstructing wallet.");
@@ -552,20 +552,30 @@ class MetaphiWalletApi {
     this._plasmaClient = plasmaClient;
   };
 
-  _getAuthenticatedJwt = () => {
-    const ID = this._userId;
-    const cookieName = `${ID}-jwt`;
-    return Cookies.get(cookieName);
+  _getAuthenticatedJwtCookieName = () => {
+    if (!this._userId) {
+      throw new Error("User not found.");
+    }
+
+    return `metaphi-jwt-${this._userId}`;
   };
 
-  _setAuthenticatedJwt = (userId, jwt) => {
-    const cookieName = `${userId}-jwt`;
-    Cookies.set(cookieName, jwt, { expires: 1, path: "" }); // Expires in 1 day
+  _getAuthenticatedJwt = () => {
+    try {
+      const cookieName = this._getAuthenticatedJwtCookieName();
+      return Cookies.get(cookieName);
+    } catch (ex) {
+      return null;
+    }
+  };
+
+  _setAuthenticatedJwt = (jwt) => {
+    const cookieName = this._getAuthenticatedJwtCookieName();
+    Cookies.set(cookieName, jwt, { expires: 1 / 24, path: "" }); // Expires in 1 day
   };
 
   _resetAuthenticatedJwt = () => {
-    const ID = this._userId;
-    const cookieName = `${ID}-jwt`;
+    const cookieName = this._getAuthenticatedJwtCookieName();
     Cookies.remove(cookieName, { path: "" });
   };
 
@@ -666,7 +676,10 @@ class MetaphiWalletApi {
         },
         data: data,
       };
-      const result = await axios(config);
+      const response = await axios(config);
+      if (!response.data.success) {
+        throw new Error("Error uploading share to Metaphi");
+      }
       this._logger(`Successfully uploaded share to Metaphi`);
     } catch (ex) {
       this._logger(`Error uploading share to Metaphi: ${ex.toString()}`);
@@ -700,8 +713,9 @@ class MetaphiWalletApi {
         data,
       };
       const response = await axios(config);
-      if (response.success) this._logger(`Successfully uploaded share to dApp`);
-      else this._logger(`Error uploading share to dApp`);
+      if (!response.data.success) {
+        throw new Error("Error uploading share to dApp");
+      }
     } catch (ex) {
       this._logger(`Error uploading share to dApp: ${ex.toString()}`);
       throw ex;
