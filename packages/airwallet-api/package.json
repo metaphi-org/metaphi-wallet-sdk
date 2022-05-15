@@ -1,6 +1,6 @@
 {
   "name": "@metaphi/airwallet-api",
-  "version": "0.0.1-alpha.6",
+  "version": "0.0.1-alpha.7",
   "description": "Metaphi Airwallet API to add whitelabel, non-custodial wallets to dApps",
   "keywords": [
     "blockchain",
@@ -34,10 +34,15 @@
   "dependencies": {
     "@ethereumjs/common": "^2.6.4",
     "@ethereumjs/tx": "^3.5.1",
+    "@maticnetwork/maticjs": "^3.3.0",
+    "@maticnetwork/maticjs-plasma": "^1.0.4",
+    "@maticnetwork/maticjs-web3": "^1.0.1",
+    "@truffle/hdwallet-provider": "^2.0.8",
     "axios": "^0.26.1",
     "babel-loader": "^8.2.5",
     "crypto": "^1.0.1",
     "crypto-browserify": "^3.12.0",
+    "electron": "^18.2.3",
     "ethereumjs-wallet": "^1.0.2",
     "js-cookie": "^3.0.1",
     "shamirs-secret-sharing": "^1.0.1",

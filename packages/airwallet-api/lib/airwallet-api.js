@@ -23,8 +23,16 @@ import Common, { Chain } from "@ethereumjs/common";
 import { Transaction } from "@ethereumjs/tx";
 // Initialization
 const common = new Common({ chain: Chain.Mainnet });
+// Providers & Polygon
+import HDWalletProvider from "@truffle/hdwallet-provider";
+import { PlasmaClient } from "@maticnetwork/maticjs-plasma";
+import { use } from "@maticnetwork/maticjs";
+import { Web3ClientPlugin } from "@maticnetwork/maticjs-web3";
 
-console.log("Loaded Metaphi Api v0.6-alpha");
+console.log("Loaded Metaphi Api.");
+
+use(Web3ClientPlugin);
+
 class MetaphiWalletApi {
   /* Static properties */
   // Endpoint for wallets.
@@ -42,10 +50,20 @@ class MetaphiWalletApi {
   _clientId = null;
   // API key of the dApp.
   _clientApiKey = null;
+
+  /** Wallet Properties */
   // Wallet Public Address
   _publicAddress = null;
   // Wallet Private Key
   _privateKey = null;
+
+  /** Network Properties */
+  // Rpc
+  _rpc = "https://rpc-mumbai.maticvigil.com";
+  // Wallet Provider.
+  _provider = null;
+  // Plasma Client, for Polygon
+  _plasmaClient = null;
 
   // Additional features.
   _logger = console.log;
@@ -77,50 +95,57 @@ class MetaphiWalletApi {
   /* Public methods */
   // Login Metaphi wallet
   login = async (userId) => {
+    let response = { verified: false };
+
     // Persist user id.
     this._userId = userId;
 
     this._logger(`Logging in: ${userId}.`);
 
-    // Check if returning user.
-    this._logger("Authenticate returning user.");
-    let jwt = this._getAuthenticatedJwt();
+    // Get wallet
+    const { jwt, address } = await this._retrieveWallet(userId);
+
+    // Check if logged-in user. Skip verification, if true.
     if (jwt) {
-      const { wallet_id, address } = await this._getUserDetails(jwt);
-      this._publicAddress = address;
-      this._logger(`User is already logged in: ${address}`);
+      response.verified = true;
     } else {
-      const response = await this._triggerManualAuthentication(userId);
-      if (!response) {
-        this._logger("Error authenticating user.", "red");
-        return;
-      }
+      // Fetch user details from jwt.
     }
+
+    // Set public address.
+    this._publicAddress = address;
 
     // Extract public address.
     this._logger(`Wallet Authenticated: ${this._publicAddress}`);
 
-    // Connect wallet.
-    this._logger("Connecting wallet.");
-    try {
-      await this._connectWallet(userId);
-      if (this._publicAddress && this._privateKey) {
-        this._logger("Wallet reconstruction successful. Wallet connected.");
-      } else {
-        this._logger(`Error connecting wallet.`);
-      }
-    } catch (ex) {
-      this._logger(`Error connecting wallet: ${ex.toString()}`);
+    return response;
+  };
+
+  // Check if user is logged-in.
+  isUserLoggedIn = () => {
+    return !!this._getAuthenticatedJwt();
+  };
+
+  getCurrentUser = () => {
+    let jwt = this._getAuthenticatedJwt();
+    if (jwt) {
+      this._logger(`User is already logged in: ${address}`);
+      response.verified = true;
     }
+  };
+
+  // Wallet Provider
+  getProvider = () => {
+    return this._provider;
   };
 
   // Get public address of wallet.
   getAddress = () => {
-    console.log(this);
     this._logger(`Connected Wallet Address: ${this._publicAddress}`);
     return this._publicAddress;
   };
 
+  // Create a new wallet for the user. Use with caution.
   createNewWallet = async () => {
     // If the public address does not exist or minimum shares are not met
     //    a. Generate the wallet key and address locally.
@@ -135,7 +160,19 @@ class MetaphiWalletApi {
     this._setupWallet(wallet);
   };
 
-  // Sign a message.
+  // Transfer.
+  transfer = async (toAddress, valueInWei) => {
+    const plasmaClient = this._plasmaClient;
+    // Source: https://maticnetwork.github.io/matic.js/docs/plasma/erc20/transfer/
+    // initialize token with null means use MATIC tokens
+    const erc20Token = plasmaClient.erc20(null);
+    const result = await erc20Token.transfer(valueInWei, toAddress);
+    const txHash = await result.getTransactionHash();
+    const txReceipt = await result.getReceipt();
+    return txReceipt;
+  };
+
+  // Sign a transaction.
   signTransaction = (transaction) => {
     if (!this._privateKey) {
       this._logger("Error signing transaction: Private key missing", "red");
@@ -154,6 +191,48 @@ class MetaphiWalletApi {
       return serializedTx;
     } catch (ex) {
       this._logger(`Error signing transaction: ${ex.toString()}`);
+    }
+  };
+
+  // Sign a message
+  signMessage = () => {
+    // TODO.
+  };
+
+  // Get value in public address.
+  // @return wei.
+  getValue = (network) => {
+    // When no network, use default network.
+    return 0.001;
+  };
+
+  getCurrency = () => {
+    return "MATIC";
+  };
+
+  // Get associated networks.
+  getNetwork = () => {
+    return [];
+  };
+
+  // Get currently connected network.
+  getConnectedNetwork = () => {
+    return "Mumbai Matic Network";
+  };
+
+  // Connect wallet.
+  connect = async () => {
+    // Connect wallet.
+    this._logger("Connecting wallet.");
+    try {
+      await this._connectWallet();
+      if (this._publicAddress && this._privateKey) {
+        this._logger("Wallet reconstruction successful. Wallet connected.");
+      } else {
+        this._logger(`Error connecting wallet.`);
+      }
+    } catch (ex) {
+      this._logger(`Error connecting wallet: ${ex.toString()}`);
     }
   };
 
@@ -266,12 +345,42 @@ class MetaphiWalletApi {
   _triggerManualAuthentication = async (userId) => {
     this._logger("User is not logged in. Triggering authentication flow");
 
+    // Get wallet.
+    let jwt = await this._retrieveWallet(userId);
+
+    // Verification Flow.
+    // This is triggered when there is no oauth flow setup for this dApp.
+    if (!jwt) {
+      this._logger("Triggering verification flow.");
+      var verificationCode = prompt("Enter your verification code", "123456");
+      this._logger(`Entered Verification Code: ${verificationCode}.`);
+
+      let { address, authenticated, jwt, wallet_id } =
+        await this._verifyUserVerificationCode(userId, verificationCode);
+
+      // Set public address.
+      this._publicAddress = address;
+
+      // Set jwt authorization
+      this._setAuthenticatedJwt(userId, jwt);
+
+      return authenticated;
+    }
+
+    // OAuth one-click setup.
+    // TODO: Get public address from jwt and set it.
+    // TODO: Cache jwt.
+
+    // Authenticated.
+    return 1;
+  };
+
+  // Get/Create new wallet.
+  _retrieveWallet = async (userId) => {
     let myHeaders = new Headers();
     myHeaders.append("X-Metaphi-Api-Key", this._clientApiKey);
     myHeaders.append("x-metaphi-account-id", this._clientId);
     myHeaders.append("Content-Type", "application/json");
-
-    let jwt, authenticated;
 
     // Wallet Authentication Flow.
     // TODO: Switch to axios.
@@ -289,59 +398,64 @@ class MetaphiWalletApi {
       const URL = this._METAPHI_WALLET_API;
       const response = await fetch(URL, requestOptions);
       const wallet = await response.json();
+      console.log(wallet);
+
+      // Set userId
+      this._userId = userId;
+
       this._logger("Retrieved wallet.");
-      jwt = wallet.jwt;
+      return { jwt: wallet.jwt, address: wallet.address };
     } catch (ex) {
-      this._logger("Error recovering wallet.", "red");
+      this._logger("Error recovering wallet.", ex);
+    }
+  };
+
+  // Authenticate user via verification code.
+  _verifyUserVerificationCode = async (userId, verificationCode) => {
+    let myHeaders = new Headers();
+    myHeaders.append("X-Metaphi-Api-Key", this._clientApiKey);
+    myHeaders.append("x-metaphi-account-id", this._clientId);
+    myHeaders.append("Content-Type", "application/json");
+
+    try {
+      // Verify code.
+      // TODO: Switch to axios.
+      const URL = this._METAPHI_WALLET_VERIFY_API;
+      let raw = JSON.stringify({
+        email: userId,
+        verification_code: verificationCode,
+      });
+      var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+      const response = await fetch(URL, requestOptions);
+      const wallet = await response.json();
+      const {
+        jwt,
+        wallet: { address, wallet_id },
+      } = wallet;
+
+      // Set jwt.
+      this._setAuthenticatedJwt(userId, jwt);
+
+      // Set public address.
+      this._publicAddress = address;
+
+      return { authenticated: true, jwt, address, wallet_id };
+    } catch (ex) {
+      console.log(ex);
+      this._logger(`Error verifying wallet.`);
     }
 
-    // Verification Flow.
-    // This is triggered when there is no oauth flow setup for this dApp.
-    if (!jwt) {
-      this._logger("Triggering verification flow.");
-      try {
-        var verificationCode = prompt("Enter your verification code", "123456");
-        this._logger(`Entered Verification Code: ${verificationCode}.`);
-
-        // Verify code.
-        // TODO: Switch to axios.
-        const URL = this._METAPHI_WALLET_VERIFY_API;
-        let raw = JSON.stringify({
-          email: userId,
-          verification_code: verificationCode,
-        });
-        var requestOptions = {
-          method: "POST",
-          headers: myHeaders,
-          body: raw,
-          redirect: "follow",
-        };
-        const response = await fetch(URL, requestOptions);
-        const wallet = await response.json();
-        jwt = wallet.jwt;
-        const { address, wallet_id } = wallet.wallet;
-
-        // Set public address
-        this._publicAddress = address;
-
-        // TODO: Cache wallet_id instead.
-
-        authenticated = 1;
-      } catch (ex) {
-        console.log(ex);
-        this._logger(`Error verifying wallet.`);
-        return;
-      }
-    }
-
-    // Set jwt authorization
-    this._setAuthenticatedJwt(jwt);
-
-    return authenticated;
+    return { authenticated: false };
   };
 
   // Connect Metaphi Wallet
-  _connectWallet = async (userId) => {
+  _connectWallet = async () => {
+    const userId = this._userId;
     const userCreds = await this._getUserCreds(userId);
     const wallet = await this.recoverOrCreateWallet(userCreds);
 
@@ -370,7 +484,7 @@ class MetaphiWalletApi {
     return userCreds;
   };
 
-  _setupWallet = (wallet) => {
+  _setupWallet = async (wallet) => {
     // If the wallet address has changed, update user
     if (wallet.address !== this._publicAddress) {
       // TODO: Handle this case, NS to comment
@@ -389,6 +503,53 @@ class MetaphiWalletApi {
 
     // Persist private key.
     this._privateKey = wallet.privateKey;
+
+    // Setup wallet provider.
+    this._setupWalletProvider();
+
+    // Setup plasmaClient, for Polygon
+    this._setupPlasmaClient();
+  };
+
+  _setupWalletProvider = () => {
+    const privateKey = this._privateKey;
+    const rpc = this._rpc;
+
+    if (!privateKey || !rpc) {
+      throw new Error("Invalid private key or rpc");
+    }
+
+    // Assign.
+    this._provider = new HDWalletProvider(privateKey, rpc);
+  };
+
+  _setupPlasmaClient = async () => {
+    const network = "testnet"; // 'testnet' or 'mainnet'
+    const version = "mumbai"; // 'mumbai' or 'v1'
+    const provider = this._provider;
+    const publicAddress = this._publicAddress;
+
+    // Setup Plasma Client.
+    const plasmaClient = new PlasmaClient();
+    await plasmaClient.init({
+      network,
+      version,
+      parent: {
+        provider: this._provider,
+        defaultConfig: {
+          from: publicAddress,
+        },
+      },
+      child: {
+        provider: provider,
+        defaultConfig: {
+          from: publicAddress,
+        },
+      },
+    });
+
+    // Assign.
+    this._plasmaClient = plasmaClient;
   };
 
   _getAuthenticatedJwt = () => {
@@ -397,9 +558,8 @@ class MetaphiWalletApi {
     return Cookies.get(cookieName);
   };
 
-  _setAuthenticatedJwt = (jwt) => {
-    const ID = this._userId;
-    const cookieName = `${ID}-jwt`;
+  _setAuthenticatedJwt = (userId, jwt) => {
+    const cookieName = `${userId}-jwt`;
     Cookies.set(cookieName, jwt, { expires: 1, path: "" }); // Expires in 1 day
   };
 
@@ -412,20 +572,16 @@ class MetaphiWalletApi {
   // Get user details from jwt.
   _getUserDetails = async (jwt) => {
     this._logger(`Fetch wallet details: ${this._METAPHI_WALLET_API}`);
-    try {
-      const response = await axios.get(this._METAPHI_WALLET_API, {
-        api_key: { api_key: this._clientApiKey },
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-          "Content-Type": "application/json",
-          "X-Metaphi-Api-Key": this._clientApiKey,
-          "x-metaphi-account-id": this._clientId,
-        },
-      });
-      return response.data.user;
-    } catch (ex) {
-      this._logger(`Error fetching share from dApp ${ex.toString()}`);
-    }
+    const response = await axios.get(this._METAPHI_WALLET_API, {
+      api_key: { api_key: this._clientApiKey },
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+        "X-Metaphi-Api-Key": this._clientApiKey,
+        "x-metaphi-account-id": this._clientId,
+      },
+    });
+    return response.data.user;
   };
 
   // Get share from device.
@@ -564,7 +720,7 @@ class MetaphiWalletApi {
     );
   };
 
-  // Encrypts using an AES256 cipher.
+  // Encrypt using an AES256 cipher.
   // Source: https://stackoverflow.com/questions/59528472/encrypt-decrypt-binary-data-crypto-js
   _aes256_encrypt = (value, key) => {
     var ivlength = 16; // AES blocksize
@@ -573,7 +729,6 @@ class MetaphiWalletApi {
     var encrypted = cipher.update(value, "binary", "binary");
     encrypted += cipher.final("binary");
     const final = iv.toString("binary") + ":" + encrypted;
-    console.log("IV encrypt----", iv, final.split(":"));
     return final;
   };
 
@@ -581,7 +736,6 @@ class MetaphiWalletApi {
   _aes256_decrypt = (ciphertext, key) => {
     var components = ciphertext.split(":");
     var iv_from_ciphertext = Buffer.from(components.shift(), "binary");
-    console.log("IV decrypt----", iv_from_ciphertext.toString("binary"));
     try {
       var decipher = crypto.createDecipheriv("aes256", key, iv_from_ciphertext);
       var deciphered = decipher.update(
@@ -594,7 +748,6 @@ class MetaphiWalletApi {
     } catch (err) {
       console.log(err);
       this._logger("Error: ", err);
-      console.log("IV: ", iv_from_ciphertext, components);
     }
   };
 
@@ -622,15 +775,15 @@ class MetaphiWalletApi {
     );
 
     // TODO: Remove later
-    const decrypted_shares = encrypted_shares.map((share) => {
-      return this._aes256_decrypt(share.toString("binary"), symmetric_key);
-    });
-    const key = this._reconstructWalletFromSecret(
-      symmetric_key,
-      decrypted_shares[2],
-      decrypted_shares[0]
-    );
-    console.log("reconstructed key----", key);
+    // const decrypted_shares = encrypted_shares.map((share) => {
+    //   return this._aes256_decrypt(share.toString("binary"), symmetric_key);
+    // });
+    // const key = this._reconstructWalletFromSecret(
+    //   symmetric_key,
+    //   decrypted_shares[2],
+    //   decrypted_shares[0]
+    // );
+    // console.log("reconstructed key----", key);
 
     // Upload shares.
     let uploadedShareCount = 0;
