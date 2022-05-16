@@ -33,6 +33,8 @@ console.log("Loaded Metaphi Api.");
 
 use(Web3ClientPlugin);
 
+const METAPHI_LOCAL_SHARE_PREFIX = "metaphi-key-share-";
+
 class MetaphiWalletApi {
   /* Static properties */
   // Endpoint for wallets.
@@ -45,6 +47,7 @@ class MetaphiWalletApi {
     "https://api-staging.metaphi.xyz/v1/wallets/secret";
   // Endpoint that exposes the dApp Secret API.
   _DAPP_WALLET_SECRET_API = null;
+  // Local share prefix.
 
   // ClientId of the dApp.
   _clientId = null;
@@ -396,7 +399,6 @@ class MetaphiWalletApi {
       const URL = this._METAPHI_WALLET_API;
       const response = await fetch(URL, requestOptions);
       const wallet = await response.json();
-      console.log(wallet);
 
       // Set userId
       this._userId = userId;
@@ -596,7 +598,7 @@ class MetaphiWalletApi {
 
   // Get share from device.
   _getShareFromDevice = (userEmail) => {
-    let share = store.get(`${userEmail}-key-share`);
+    let share = store.get(`${METAPHI_LOCAL_SHARE_PREFIX}-${userEmail}`);
     return share;
   };
 
@@ -651,7 +653,7 @@ class MetaphiWalletApi {
 
   // Set share on device.
   _uploadToDevice = (userCreds, share) => {
-    const key = `${userCreds.userEmail}-key-share`;
+    const key = `${METAPHI_LOCAL_SHARE_PREFIX}-${userCreds.userEmail}`;
     store.set(key, share);
     this._logger(`Saved local share on device.`);
   };
@@ -694,9 +696,7 @@ class MetaphiWalletApi {
     // the dApps hosting their own contract gateway in the future.
     // This is why for now, we pass in the newWalletJwt.
     try {
-      this._logger(
-        `Uploading local share to dApp: ${this._DAPP_WALLET_SECRET_API}`
-      );
+      this._logger(`Uploading share to dApp: ${this._DAPP_WALLET_SECRET_API}`);
       const data = {
         key_share: share,
         wallet_address: address,
@@ -729,35 +729,34 @@ class MetaphiWalletApi {
     // This should be protected using faceid, webauthn, etc.
     // Key must be 32 bytes for aes256.
     return Buffer.from(
-      crypto.createHash("sha256").update(seed).digest("hex"),
-      "hex"
+      crypto.createHash("sha256").update(seed).digest("base64"),
+      "base64"
     );
   };
 
   // Encrypt using an AES256 cipher.
-  // Source: https://stackoverflow.com/questions/59528472/encrypt-decrypt-binary-data-crypto-js
   _aes256_encrypt = (value, key) => {
     var ivlength = 16; // AES blocksize
     var iv = crypto.randomBytes(ivlength);
     var cipher = crypto.createCipheriv("aes256", key, iv);
-    var encrypted = cipher.update(value, "binary", "binary");
-    encrypted += cipher.final("binary");
-    const final = iv.toString("binary") + ":" + encrypted;
+    var encrypted = cipher.update(value, "base64", "base64");
+    encrypted += cipher.final("base64");
+    const final = iv.toString("base64") + "::" + encrypted;
     return final;
   };
 
   // Decrypts using an AES256 cipher.
   _aes256_decrypt = (ciphertext, key) => {
-    var components = ciphertext.split(":");
-    var iv_from_ciphertext = Buffer.from(components.shift(), "binary");
+    var components = ciphertext.split("::");
+    var iv_from_ciphertext = Buffer.from(components.shift(), "base64");
     try {
       var decipher = crypto.createDecipheriv("aes256", key, iv_from_ciphertext);
       var deciphered = decipher.update(
-        components.join(":"),
-        "binary",
-        "binary"
+        components.join("::"),
+        "base64",
+        "base64"
       );
-      deciphered += decipher.final("binary");
+      deciphered += decipher.final("base64");
       return deciphered;
     } catch (err) {
       console.log(err);
@@ -782,22 +781,11 @@ class MetaphiWalletApi {
 
     // Encrypt the shares with the generated symmetric key.
     const encrypted_shares = shares.map((share) =>
-      this._aes256_encrypt(share.toString("binary"), symmetric_key)
+      this._aes256_encrypt(share.toString("base64"), symmetric_key)
     );
     this._logger(
       `Generated Encrypted shares: ${encrypted_shares.length} \n${encrypted_shares[0]}\n\n${encrypted_shares[1]}\n\n${encrypted_shares[2]}}`
     );
-
-    // TODO: Remove later
-    // const decrypted_shares = encrypted_shares.map((share) => {
-    //   return this._aes256_decrypt(share.toString("binary"), symmetric_key);
-    // });
-    // const key = this._reconstructWalletFromSecret(
-    //   symmetric_key,
-    //   decrypted_shares[2],
-    //   decrypted_shares[0]
-    // );
-    // console.log("reconstructed key----", key);
 
     // Upload shares.
     let uploadedShareCount = 0;
@@ -838,14 +826,14 @@ class MetaphiWalletApi {
 
     // Decrypt shares.
     const decrypted_shares = [keyShare1, keyShare2].map((share) => {
-      return this._aes256_decrypt(share.toString("binary"), symmetric_key);
+      return this._aes256_decrypt(share.toString("base64"), symmetric_key);
     });
 
     // Reconstruct the private key and return the wallet.
     const privateKey = sss
       .combine([
-        Buffer.from(decrypted_shares[0], "binary"),
-        Buffer.from(decrypted_shares[1], "binary"),
+        Buffer.from(decrypted_shares[0], "base64"),
+        Buffer.from(decrypted_shares[1], "base64"),
       ])
       .toString();
 
