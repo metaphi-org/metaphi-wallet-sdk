@@ -18,16 +18,20 @@ import Cookies from "js-cookie";
 import sss from "shamirs-secret-sharing";
 import crypto from "crypto";
 // Wallets & Transactions
+import Web3 from "web3";
 import EthereumWallet from "ethereumjs-wallet";
 import Common, { Chain } from "@ethereumjs/common";
 import { Transaction } from "@ethereumjs/tx";
-// Initialization
-const common = new Common({ chain: Chain.Mainnet });
+import { ecsign, hashPersonalMessage, toBuffer } from "ethereumjs-util";
+import { concatSig } from "./utils";
 // Providers & Polygon
 import HDWalletProvider from "@truffle/hdwallet-provider";
 import { PlasmaClient } from "@maticnetwork/maticjs-plasma";
 import { use } from "@maticnetwork/maticjs";
 import { Web3ClientPlugin } from "@maticnetwork/maticjs-web3";
+
+// Initialization
+const common = new Common({ chain: Chain.Mainnet });
 
 console.log("Loaded Metaphi Api.");
 
@@ -62,9 +66,13 @@ class MetaphiWalletApi {
 
   /** Network Properties */
   // Rpc
-  _rpc = "https://rpc-mumbai.maticvigil.com";
+  _rpc = null;
+  // Chain Id
+  _chainId = 0;
   // Wallet Provider.
   _provider = null;
+  // Web3 Provider
+  _web3Provider = null;
   // Plasma Client, for Polygon
   _plasmaClient = null;
 
@@ -72,11 +80,15 @@ class MetaphiWalletApi {
   _logger = console.log;
 
   constructor(options) {
-    const { accountConfig, custom } = options;
+    const { accountConfig, networkConfig, custom } = options;
 
     // Throw error, when accountConfig is missing.
     if (!accountConfig || !accountConfig.clientId || !accountConfig.apiKey) {
       throw new Error("Error initializing wallet: Missing clientId or apiKey");
+    }
+
+    if (!networkConfig || !networkConfig.rpcUrl) {
+      throw new Error("Error: Missing RPC");
     }
 
     // Account Config.
@@ -84,6 +96,12 @@ class MetaphiWalletApi {
     this._clientApiKey = accountConfig.apiKey;
     this._DAPP_WALLET_SECRET_API =
       "https://api-staging.metaphi.xyz/v1/dapp/secret"; // TODO: Should be initialized by dApp.
+
+    // RPC
+    this._rpc = networkConfig.rpcUrl;
+
+    // Chain Id
+    this._chainId = networkConfig.chainId;
 
     // Custom functions.
     this._logger = custom?.logger || console.log;
@@ -161,7 +179,7 @@ class MetaphiWalletApi {
 
   // Wallet Provider.
   getProvider = () => {
-    return this._provider;
+    return this._web3Provider;
   };
 
   // Get public address of wallet.
@@ -217,6 +235,18 @@ class MetaphiWalletApi {
     } catch (ex) {
       this._logger(`Error signing transaction: ${ex.toString()}`);
     }
+  };
+
+  // Personal Sign.
+  // Inspired from: https://github.com/MetaMask/eth-sig-util/blob/8f5a90bed37e6891fe4e9ab98a8cd4f62188d5c4/src/personal-sign.ts
+  personalSign = (messageString) => {
+    if (!messageString || !this._privateKey) {
+      throw new Error("Missing parameters");
+    }
+
+    const message = Buffer.from(messageString);
+    const msgHash = hashPersonalMessage(message);
+    return this._personalSign(msgHash, this._privateKey);
   };
 
   // Sign a message
@@ -327,6 +357,16 @@ class MetaphiWalletApi {
   };
 
   /* Private methods */
+  _personalSign = (msgHash, privateKey) => {
+    console.log(new Buffer.from(this._privateKey.substr(2), "hex"));
+    const sig = ecsign(
+      msgHash,
+      new Buffer.from(this._privateKey.substr(2), "hex")
+    );
+    const serialized = concatSig(toBuffer(sig.v), sig.r, sig.s);
+    return serialized;
+  };
+
   _reset = async () => {
     /** Empty Caches. */
     // Authentication
@@ -518,11 +558,18 @@ class MetaphiWalletApi {
     const rpc = this._rpc;
 
     if (!privateKey || !rpc) {
+      console.log(privateKey, rpc);
       throw new Error("Invalid private key or rpc");
     }
 
     // Assign.
     this._provider = new HDWalletProvider(privateKey, rpc);
+
+    // Assign.
+    // Source: www.reddit.com/r/ethdev/comments/8d70mz/using_infura_with_web3_html_providerengine/
+    this._web3Provider = new Web3(this._provider);
+    console.log(this._web3Provider);
+    window.metaphi = this._web3Provider;
   };
 
   _setupPlasmaClient = async () => {
@@ -770,6 +817,7 @@ class MetaphiWalletApi {
     const EthWallet = EthereumWallet.generate();
     const address = EthWallet.getAddressString();
     const privateKey = EthWallet.getPrivateKeyString();
+    console.log("new private key", privateKey);
 
     // Create secrets from it.
     const shares = sss.split(privateKey, { shares: 3, threshold: 2 });
