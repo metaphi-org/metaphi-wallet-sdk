@@ -817,7 +817,6 @@ class MetaphiWalletApi {
     const EthWallet = EthereumWallet.generate();
     const address = EthWallet.getAddressString();
     const privateKey = EthWallet.getPrivateKeyString();
-    console.log("new private key", privateKey);
 
     // Create secrets from it.
     const shares = sss.split(privateKey, { shares: 3, threshold: 2 });

@@ -1,6 +1,6 @@
 {
   "name": "@metaphi/airwallet-api",
-  "version": "0.0.1-alpha.9",
+  "version": "0.0.1-alpha.10",
   "description": "Metaphi Airwallet API to add whitelabel, non-custodial wallets to dApps",
   "keywords": [
     "blockchain",
@@ -12,7 +12,7 @@
   "author": "Akshata <akshatamohanty@gmail.com>",
   "homepage": "https://metaphi.xyz",
   "license": "MIT",
-  "main": "lib/airwallet-api.js",
+  "main": "lib/index.js",
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -26,7 +26,7 @@
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
-    "build": "browserify ./lib/airwallet-api.js -p esmify -o ./dist/index.js"
+    "build": "browserify ./lib/index.js -p esmify -o ./dist/index.js"
   },
   "bugs": {
     "url": "https://github.com/metaphi-org/metaphi-api/issues"
