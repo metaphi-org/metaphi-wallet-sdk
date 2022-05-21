@@ -33,7 +33,7 @@ import { Web3ClientPlugin } from "@maticnetwork/maticjs-web3";
 // Initialization
 const common = new Common({ chain: Chain.Mainnet });
 
-console.log("Loaded Metaphi Api.");
+console.log("Loaded Metaphi Wallet Api.");
 
 use(Web3ClientPlugin);
 
@@ -41,6 +41,8 @@ const METAPHI_LOCAL_SHARE_PREFIX = "metaphi-key-share-";
 
 class MetaphiWalletApi {
   /* Static properties */
+  // Environment
+  _environment = "development";
   // Endpoint for wallets.
   _METAPHI_WALLET_API = "https://api-staging.metaphi.xyz/v1/wallets";
   // Endpoint for wallet verification.
@@ -77,7 +79,7 @@ class MetaphiWalletApi {
   _plasmaClient = null;
 
   // Additional features.
-  _logger = console.log;
+  _logger = null;
 
   constructor(options) {
     const { accountConfig, networkConfig, custom } = options;
@@ -96,6 +98,7 @@ class MetaphiWalletApi {
     this._clientApiKey = accountConfig.apiKey;
     this._DAPP_WALLET_SECRET_API =
       "https://api-staging.metaphi.xyz/v1/dapp/secret"; // TODO: Should be initialized by dApp.
+    this._environment = accountConfig.env || "development";
 
     // RPC
     this._rpc = networkConfig.rpcUrl;
@@ -104,7 +107,13 @@ class MetaphiWalletApi {
     this._chainId = networkConfig.chainId;
 
     // Custom functions.
-    this._logger = custom?.logger || console.log;
+    if (custom?.logger) {
+      this._logger = custom.logger;
+    } else {
+      this._logger = function () {
+        console.log(...arguments);
+      };
+    }
 
     // User Id
     this._userId = null;
@@ -358,7 +367,6 @@ class MetaphiWalletApi {
 
   /* Private methods */
   _personalSign = (msgHash, privateKey) => {
-    console.log(new Buffer.from(this._privateKey.substr(2), "hex"));
     const sig = ecsign(
       msgHash,
       new Buffer.from(this._privateKey.substr(2), "hex")
@@ -486,7 +494,6 @@ class MetaphiWalletApi {
 
       return { authenticated: true, jwt, address, wallet_id };
     } catch (ex) {
-      console.log(ex);
       this._logger(`Error verifying wallet.`);
     }
 
@@ -558,7 +565,6 @@ class MetaphiWalletApi {
     const rpc = this._rpc;
 
     if (!privateKey || !rpc) {
-      console.log(privateKey, rpc);
       throw new Error("Invalid private key or rpc");
     }
 
@@ -568,7 +574,6 @@ class MetaphiWalletApi {
     // Assign.
     // Source: www.reddit.com/r/ethdev/comments/8d70mz/using_infura_with_web3_html_providerengine/
     this._web3Provider = new Web3(this._provider);
-    console.log(this._web3Provider);
     window.metaphi = this._web3Provider;
   };
 
@@ -806,7 +811,6 @@ class MetaphiWalletApi {
       deciphered += decipher.final("base64");
       return deciphered;
     } catch (err) {
-      console.log(err);
       this._logger("Error: ", err);
     }
   };
@@ -820,7 +824,6 @@ class MetaphiWalletApi {
 
     // Create secrets from it.
     const shares = sss.split(privateKey, { shares: 3, threshold: 2 });
-    console.log(shares);
 
     // Generate symmetric key
     var symmetric_key = this._generateSymmetricKey(userCreds);
