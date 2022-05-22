@@ -18,7 +18,7 @@ class WalletPlugin {
     this._options = options;
     this._accountConfig = options.accountConfig;
     this._networkConfig = options.networkConfig;
-    this._SOURCE_URL = "http://localhost:8080"; // "https://metaphi.xyz";
+    this._SOURCE_URL = "https://metaphi.xyz";
   }
 
   /** Public Functions */
