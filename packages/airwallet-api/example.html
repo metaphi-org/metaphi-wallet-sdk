@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <script>
+      const callbacks = [];
+      function connect() {
+        callbacks.push(onConnectCallback);
+
+        const targetOrigin = "http://localhost:8080";
+
+        const request = {
+          method: "connect",
+          payload: null,
+          callbackId: 0,
+        };
+        const frame = document.getElementById("metaphi-wallet");
+        frame.contentWindow.postMessage(request, targetOrigin);
+      }
+
+      function onConnectCallback() {
+        console.log("parent says --- connected");
+      }
+      function myFunction() {
+        document.getElementById("demo").innerHTML = "Hello World";
+      }
+
+      window.addEventListener("message", (event) => {
+        // IMPORTANT: check the origin of the data!
+        if (event.origin.startsWith("http://localhost:8080")) {
+          console.log("parent got message", event);
+
+          // The data was sent from your site.
+          // Data sent with postMessage is stored in event.data:
+          const request = event.data;
+          if (request.callbackId !== undefined) {
+            callbacks[request.callbackId]();
+          }
+
+          // Remove from callback.
+        } else {
+          // The data was NOT sent from your site!
+          // Be careful! Do not use it. This else branch is
+          // here just for clarity, you usually shouldn't need it.
+          return;
+        }
+      });
+    </script>
+  </head>
+  <body>
+    Hello, World
+
+    <button onclick="connect()">Connect Wallet</button>
+    <button onclick="myFunction()">Click me</button>
+    <p id="demo"></p>
+    <iframe
+      id="metaphi-wallet"
+      src="http://localhost:8080/wallet/embed?clientId=54&apiKey=7114fdad-e68c-478a-8c90-23bae177abc0&rpc=https://matic-mumbai.chainstacklabs.com"
+      title="Wallet"
+    ></iframe>
+  </body>
+</html>

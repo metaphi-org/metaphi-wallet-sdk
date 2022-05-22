@@ -1,14 +1,14 @@
 import MetaphiWalletApi from "./airwallet-api";
 
-// https://stackoverflow.com/questions/34869352/how-to-declare-private-variables-and-private-methods-in-es6-class
-
 const s_wallet = Symbol();
 
 /**
- * Wrapper class. For wallet.
  *
- *
+ * Wrapper class for Wallet Instance.
+ * Creates a Proxy object, abstracting direct access to private keys and functions.
+ * Source: https://stackoverflow.com/questions/34869352/how-to-declare-private-variables-and-private-methods-in-es6-class
  */
+
 class MetaphiWallet {
   constructor(options) {
     this[s_wallet] = new MetaphiWalletApi(options);
@@ -19,7 +19,7 @@ class MetaphiWallet {
    * @param {String} userId - Email or phone.
    * @returns {Object}
    */
-  login = async function (userId) {
+  login = async (userId) => {
     return await this[s_wallet].login(userId);
   };
 
@@ -29,7 +29,7 @@ class MetaphiWallet {
    * @param {Number} verificationCode - Authorization Code
    * @returns {Boolean}
    */
-  verifyAuthenticationCode = async function (userId, verificationCode) {
+  verifyAuthenticationCode = async (userId, verificationCode) => {
     return await this[s_wallet]._verifyUserVerificationCode(
       userId,
       verificationCode
@@ -42,7 +42,7 @@ class MetaphiWallet {
    * @param {Number} value - in wei
    * @returns
    */
-  transfer = async function (toAddress, value) {
+  transfer = async (toAddress, value) => {
     return await this[s_wallet].transfer(toAddress, value);
   };
 
@@ -50,7 +50,7 @@ class MetaphiWallet {
    * Get web3 provider instance.
    * @returns {Provider}
    */
-  getProvider = function () {
+  getProvider = () => {
     return this[s_wallet].getProvider();
   };
 
@@ -58,7 +58,7 @@ class MetaphiWallet {
    * Get wallet public address.
    * @returns {Address}
    */
-  getAddress = function () {
+  getAddress = () => {
     return this[s_wallet].getAddress();
   };
 
@@ -67,7 +67,7 @@ class MetaphiWallet {
    * @param {Object} transaction object
    * @returns {String} signature
    */
-  signTransaction = function (transaction) {
+  signTransaction = (transaction) => {
     return this[s_wallet].signTransaction(transaction);
   };
 
@@ -76,7 +76,7 @@ class MetaphiWallet {
    * @param {String} message
    * @returns {String} signed message
    */
-  personalSign = function (message) {
+  personalSign = (message) => {
     return this[s_wallet].personalSign(message);
   };
 
@@ -85,7 +85,7 @@ class MetaphiWallet {
    * @param {Number} userPin
    * @returns {Boolean}
    */
-  connect = async function (userPin) {
+  connect = async (userPin) => {
     return await this[s_wallet].connect(userPin);
   };
 
@@ -93,7 +93,7 @@ class MetaphiWallet {
    * Disconnect wallet.
    * @returns {void}
    */
-  disconnect = function () {
+  disconnect = () => {
     return this[s_wallet].disconnect();
   };
 
@@ -101,7 +101,7 @@ class MetaphiWallet {
    * Check if user is already authenticated.
    * @returns {Boolean}
    */
-  isUserLoggedIn = function () {
+  isUserLoggedIn = () => {
     return this[s_wallet].isUserLoggedIn();
   };
 
@@ -109,7 +109,7 @@ class MetaphiWallet {
    * Get list of userIds for logged in users.
    * @returns {Array}
    */
-  getLoggedInUsers = function () {
+  getLoggedInUsers = () => {
     return this[s_wallet].getLoggedInUsers();
   };
 
@@ -117,7 +117,7 @@ class MetaphiWallet {
    * Get private key. Use with caution!
    * @returns {String}
    */
-  getPrivateKey = function () {
+  getPrivateKey = () => {
     return this[s_wallet]._privateKey;
   };
 }
