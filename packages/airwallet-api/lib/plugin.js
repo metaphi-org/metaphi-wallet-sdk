@@ -1,3 +1,4 @@
+const Web3 = require("web3");
 const WALLET_EMBED_ID = "mWalletPlugin";
 
 // Source: https://stackoverflow.com/a/2117523/3545099
@@ -13,16 +14,21 @@ function uuidv4() {
 class WalletPlugin {
   _callbacks = { callbackFns: {} };
   _options;
+  _isLoaded = false;
+  _wallet = {};
+  _provider = null;
 
   constructor(options) {
     this._options = options;
     this._accountConfig = options.accountConfig;
     this._networkConfig = options.networkConfig;
     this._SOURCE_URL = "https://metaphi.xyz";
+    this._provider = new Web3(
+      new Web3.providers.HttpProvider(options.networkConfig.rpcUrl)
+    );
   }
 
   /** Public Functions */
-
   // Client-side only.
   init = () => {
     if (!global.window) {
@@ -37,10 +43,13 @@ class WalletPlugin {
       ifrm.setAttribute("src", source);
       ifrm.setAttribute("height", 0);
       ifrm.setAttribute("width", 0);
+      ifrm.setAttribute("style", "position: absolute; top: 0; left: 0;");
       document.getElementById("mWalletContainer").appendChild(ifrm); // to place at end of document
 
       // Setup listener, for callbacks.
       window.addEventListener("message", this._receiveMessage);
+
+      this._isLoaded = true;
     }
   };
 
@@ -49,38 +58,73 @@ class WalletPlugin {
     // Remove iframe.
     // Remove listeners.
     window.removeEventListener("message", this._receiveMessage);
+    this._isLoaded = false;
   };
 
+  /**
+   * Check, if loaded.
+   *
+   * @returns {Boolean}
+   */
+  isLoaded = () => {
+    return this._isLoaded;
+  };
+
+  /**
+   * Connect wallet.
+   * @param {Function} callback
+   */
   connect = (callback) => {
     this._sendEvent({ event: "connect" }, callback);
   };
 
+  /**
+   * Disconnect wallet.
+   * @param {Function} callback
+   */
   disconnect = (callback) => {
     this._sendEvent({ event: "disconnect" }, callback);
   };
 
-  getAddress = (callback) => {
-    this._sendEvent({ event: "getAddress" }, callback);
+  /**
+   * Get address of connected wallet.
+   *
+   * @returns {String}
+   */
+  getAddress = () => {
+    return this._wallet.address;
   };
 
-  getPrivateKey = (callback) => {
-    this._sendEvent({ event: "getPrivateKey" }, callback);
+  /**
+   * Get provider instance.
+   *
+   * @returns {Object} web3 provider
+   */
+  getProvider = () => {
+    return this._provider;
   };
 
-  getProvider = (callback) => {
-    this._sendEvent({ event: "getProvider" }, callback);
+  /**
+   *
+   * @param {Object} payload  { message: String }
+   * @param {function} callback
+   */
+  signMessage = (payload, callback) => {
+    this._sendEvent({ event: "signMessage", payload }, callback);
   };
 
-  createWallet = (callback) => {
-    this._sendEvent({ event: "createWallet" }, callback);
-  };
-
+  /**
+   *
+   * @param {Object} payload  { transaction: Object }
+   * @param {Function} callback
+   */
   signTransation = (payload, callback) => {
     this._sendEvent({ event: "signTransaction", payload }, callback);
   };
 
-  signMessage = (payload, callback) => {
-    this._sendEvent({ event: "personalSign", payload }, callback);
+  // Internal. Only exposed, for testing.
+  createWallet = (callback) => {
+    this._sendEvent({ event: "createWallet" }, callback);
   };
 
   /** Private Instances */
@@ -88,9 +132,32 @@ class WalletPlugin {
     return document.getElementById(WALLET_EMBED_ID);
   };
 
+  _handleInternalCallback = (payload) => {
+    const { method, data } = payload;
+    if (method === "wallet_connected") {
+      this._wallet.address = data.address;
+    }
+
+    if (method === "wallet_disconnected") {
+      this._wallet = {};
+    }
+
+    if (method === "show_user_input") {
+      document.getElementById(WALLET_EMBED_ID).style.pointerEvents = "auto";
+    }
+
+    if (method === "hide_user_input") {
+      document.getElementById(WALLET_EMBED_ID).style.pointerEvents = "none";
+    }
+  };
+
   _getCallbackStore = () => {
     if (!window["__METAPHI__"]) {
-      window["__METAPHI__"] = { callbacks: {} };
+      window["__METAPHI__"] = {
+        callbacks: {
+          _METAPHI_INTERNAL_CALLBACK_: this._handleInternalCallback,
+        },
+      };
     }
     return window["__METAPHI__"].callbacks;
   };
@@ -113,7 +180,10 @@ class WalletPlugin {
 
     const callbackFn = this._getCallbackStore()[callbackId];
     callbackFn(payload);
-    delete this._getCallbackStore()[callbackId];
+
+    // Delete non-internal callbacks.
+    const isInternalCallback = callbackId === "_METAPHI_INTERNAL_CALLBACK_";
+    if (!isInternalCallback) delete this._getCallbackStore()[callbackId];
   };
 
   // Send event.
