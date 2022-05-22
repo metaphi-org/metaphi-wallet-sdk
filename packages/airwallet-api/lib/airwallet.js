@@ -120,6 +120,15 @@ class MetaphiWallet {
   getPrivateKey = () => {
     return this[s_wallet]._privateKey;
   };
+
+  /**
+   * Create a new wallet.
+   * @param {Number} userPin
+   * @returns
+   */
+  createWallet = (userPin) => {
+    return this[s_wallet].createNewWallet(userPin);
+  };
 }
 
 /**

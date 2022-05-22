@@ -249,8 +249,12 @@ class MetaphiWalletApi {
   // Personal Sign.
   // Inspired from: https://github.com/MetaMask/eth-sig-util/blob/8f5a90bed37e6891fe4e9ab98a8cd4f62188d5c4/src/personal-sign.ts
   personalSign = (messageString) => {
-    if (!messageString || !this._privateKey) {
-      throw new Error("Missing parameters");
+    if (!messageString) {
+      throw new Error("Missing parameter: messageString");
+    }
+
+    if (!this._privateKey) {
+      throw new Error("Missing private key.");
     }
 
     const message = Buffer.from(messageString);
