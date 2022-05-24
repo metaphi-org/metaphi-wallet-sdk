@@ -75,7 +75,10 @@ class WalletPlugin {
    * @param {Function} callback
    */
   connect = (callback) => {
-    this._sendEvent({ event: "connect" }, callback);
+    // Add callback.
+    this._getCallbackStore()["on_connect"].push(callback);
+
+    this._login(callback);
   };
 
   /**
@@ -83,6 +86,9 @@ class WalletPlugin {
    * @param {Function} callback
    */
   disconnect = (callback) => {
+    // Add callback.
+    this._getCallbackStore()["on_disconnect"].push(callback);
+
     this._sendEvent({ event: "disconnect" }, callback);
   };
 
@@ -132,32 +138,22 @@ class WalletPlugin {
     return document.getElementById(WALLET_EMBED_ID);
   };
 
-  _handleInternalCallback = (payload) => {
-    const { method, data } = payload;
-    if (method === "wallet_connected") {
-      this._wallet.address = data.address;
-    }
-
-    if (method === "wallet_disconnected") {
-      this._wallet = {};
-    }
-
-    if (method === "show_user_input") {
-      document.getElementById(WALLET_EMBED_ID).style.pointerEvents = "auto";
-    }
-
-    if (method === "hide_user_input") {
-      document.getElementById(WALLET_EMBED_ID).style.pointerEvents = "none";
-    }
+  _initCallbackStore = () => {
+    window["__METAPHI__"] = {
+      callbacks: {
+        _METAPHI_INTERNAL_CALLBACK_: this._handleInternalCallback,
+        // events
+        on_connect: [this._handleConnect],
+        on_disconnect: [this._handleDisconnect],
+        on_verify: [this._handleVerify],
+        on_login: [this._handleLogin],
+      },
+    };
   };
 
   _getCallbackStore = () => {
     if (!window["__METAPHI__"]) {
-      window["__METAPHI__"] = {
-        callbacks: {
-          _METAPHI_INTERNAL_CALLBACK_: this._handleInternalCallback,
-        },
-      };
+      this._initCallbackStore();
     }
     return window["__METAPHI__"].callbacks;
   };
@@ -172,6 +168,74 @@ class WalletPlugin {
     return callbackId;
   };
 
+  _handleInternalCallback = (payload) => {
+    const { method, data } = payload;
+    if (method === "wallet_connected") {
+      this._wallet.address = data.address;
+    }
+
+    if (method === "wallet_disconnected") {
+      this._wallet = {};
+    }
+  };
+
+  // Event
+  _login = () => {
+    const email = prompt("email", "akshatamohanty+demo@gmail.com");
+    const payload = { email };
+    this._sendEvent({ event: "login", payload });
+  };
+
+  // Event listener
+  _handleLogin = (payload) => {
+    console.log("logged in", payload);
+    if (payload.verified) {
+      console.log("verified triggering connect");
+      // Trigger connect step.
+      return this._connect(payload.email);
+    }
+
+    // Trigger verification step.
+    return this._verify(payload.email);
+  };
+
+  // Event
+  _verify = (email) => {
+    const verificationCode = prompt(
+      "Enter verification code from your email",
+      "1234"
+    );
+    const payload = {
+      email,
+      verificationCode,
+    };
+    this._sendEvent({ event: "verify", payload });
+  };
+
+  // Listener
+  _handleVerify = (payload) => {
+    // verifying.
+    if (!payload.err) {
+      this._connect(payload.email);
+    }
+  };
+
+  // Event.
+  _connect = (email) => {
+    const userPin = prompt("Enter your pin", "1234");
+    const payload = { email, userPin };
+    this._sendEvent({ event: "connect", payload });
+  };
+
+  // Listener.
+  _handleConnect = (payload) => {
+    this._wallet.address = payload.address;
+  };
+
+  _handleDisconnect = () => {
+    // handle connect.
+  };
+
   // Execute callback.
   _executeCallback = (callbackId, payload) => {
     if (!callbackId) {
@@ -179,11 +243,19 @@ class WalletPlugin {
     }
 
     const callbackFn = this._getCallbackStore()[callbackId];
-    callbackFn(payload);
+    if (typeof callbackFn === "function") callbackFn(payload);
+    else if (Array.isArray(callbackFn)) {
+      callbackFn.forEach((fn) => {
+        fn(payload);
+      });
+      // Remove all, expect the first natives function.
+      callbackFn.splice(1);
+    }
 
     // Delete non-internal callbacks.
     const isInternalCallback = callbackId === "_METAPHI_INTERNAL_CALLBACK_";
-    if (!isInternalCallback) delete this._getCallbackStore()[callbackId];
+    if (!isInternalCallback && !Array.isArray(callbackFn))
+      delete this._getCallbackStore()[callbackId];
   };
 
   // Send event.
