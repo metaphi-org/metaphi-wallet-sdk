@@ -629,7 +629,19 @@ class MetaphiWalletApi {
 
   _setAuthenticatedJwt = (jwt) => {
     const cookieName = this._getAuthenticatedJwtCookieName();
-    Cookies.set(cookieName, jwt, { expires: 1 / 24, path: "" }); // Expires in 1 day
+    console.log("Setting authentication cookie", jwt, cookieName);
+    const expires = 1 / 24;
+    Cookies.set(cookieName, jwt, {
+      expires,
+      path: "",
+      sameSite: "none",
+    }); // Expires in 1 day
+    Cookies.set("hello", jwt, {
+      expires,
+      path: "",
+      sameSite: "none",
+      secure: true,
+    }); // Expires in 1 day
   };
 
   _resetAuthenticatedJwt = () => {
