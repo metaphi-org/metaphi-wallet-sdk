@@ -181,13 +181,21 @@ class WalletPlugin {
 
   // Event
   _login = () => {
-    const email = prompt("email", "akshatamohanty+demo@gmail.com");
+    const email = prompt(
+      "Please enter your email.",
+      "akshatamohanty+demo@gmail.com"
+    );
     const payload = { email };
     this._sendEvent({ event: "login", payload });
   };
 
   // Event listener
   _handleLogin = (payload) => {
+    if (payload.err) {
+      alert(`Error: ${payload.err}`);
+      return;
+    }
+
     if (payload.verified) {
       // Trigger connect step.
       return this._connect(payload.email);
@@ -212,8 +220,18 @@ class WalletPlugin {
 
   // Listener
   _handleVerify = (payload) => {
+    if (payload.err) {
+      alert(`Error: ${payload.err}`);
+      return;
+    }
+
+    if (!payload.authenticated) {
+      alert("Incorrect verification code.");
+      return;
+    }
+
     // verifying.
-    if (!payload.err) {
+    if (!payload.err && payload.authenticated) {
       this._connect(payload.email);
     }
   };
