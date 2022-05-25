@@ -410,7 +410,7 @@ class MetaphiWalletApi {
       var verificationCode = prompt("Enter your verification code", "123456");
       this._logger(`Entered Verification Code: ${verificationCode}.`);
 
-      let { address, authenticated, jwt, wallet_id } =
+      let { address, verified, jwt, wallet_id } =
         await this._verifyUserVerificationCode(userId, verificationCode);
 
       // Set public address.
@@ -419,7 +419,7 @@ class MetaphiWalletApi {
       // Set jwt authorization
       this._setAuthenticatedJwt(jwt);
 
-      return authenticated;
+      return verified;
     }
 
     // OAuth one-click setup.
@@ -498,12 +498,12 @@ class MetaphiWalletApi {
       // Set public address.
       this._publicAddress = address;
 
-      return { authenticated: true, jwt, address, wallet_id };
+      return { verified: true, jwt, address, wallet_id };
     } catch (ex) {
       this._logger(`Error verifying wallet.`);
     }
 
-    return { authenticated: false };
+    return { verified: false };
   };
 
   // Connect Metaphi Wallet

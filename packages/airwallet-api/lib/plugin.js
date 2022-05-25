@@ -225,13 +225,13 @@ class WalletPlugin {
       return;
     }
 
-    if (!payload.authenticated) {
+    if (!payload.verified) {
       alert("Incorrect verification code.");
       return;
     }
 
     // verifying.
-    if (!payload.err && payload.authenticated) {
+    if (!payload.err && payload.verified) {
       this._connect(payload.email);
     }
   };
