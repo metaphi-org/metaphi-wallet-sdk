@@ -241,8 +241,8 @@ class MetaphiWalletApi {
       const privateKey = new Buffer.from(this._privateKey.substr(2), "hex");
       const signedTx = tx.sign(privateKey);
 
-      const serializedTx = signedTx.serialize();
-      return serializedTx;
+      // const serializedTx = signedTx.serialize();
+      return signedTx;
     } catch (ex) {
       this._logger(`Error signing transaction: ${ex.toString()}`);
     }

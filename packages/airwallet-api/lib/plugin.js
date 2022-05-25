@@ -93,6 +93,34 @@ class WalletPlugin {
   };
 
   /**
+   *
+   * @param {Object} payload  { message: String }
+   * @param {function} callback
+   */
+  signMessage = (payload, callback) => {
+    const ok = confirm("Sign this message?");
+    if (!ok) {
+      if (callback) callback({ err: "User didnot authorize signing." });
+    }
+
+    this._sendEvent({ event: "signMessage", payload }, callback);
+  };
+
+  /**
+   *
+   * @param {Object} payload  { transaction: Object }
+   * @param {Function} callback
+   */
+  signTransation = (payload, callback) => {
+    const ok = confirm("Sign this transaction?");
+    if (!ok) {
+      if (callback) callback({ err: "User didnot authorize signing." });
+    }
+
+    this._sendEvent({ event: "signTransaction", payload }, callback);
+  };
+
+  /**
    * Get address of connected wallet.
    *
    * @returns {String}
@@ -108,24 +136,6 @@ class WalletPlugin {
    */
   getProvider = () => {
     return this._provider;
-  };
-
-  /**
-   *
-   * @param {Object} payload  { message: String }
-   * @param {function} callback
-   */
-  signMessage = (payload, callback) => {
-    this._sendEvent({ event: "signMessage", payload }, callback);
-  };
-
-  /**
-   *
-   * @param {Object} payload  { transaction: Object }
-   * @param {Function} callback
-   */
-  signTransation = (payload, callback) => {
-    this._sendEvent({ event: "signTransaction", payload }, callback);
   };
 
   // Internal. Only exposed, for testing.
