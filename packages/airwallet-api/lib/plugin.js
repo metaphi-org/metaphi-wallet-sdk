@@ -318,4 +318,8 @@ class WalletPlugin {
   };
 }
 
+if (global.window) {
+  global.window.WalletPlugin = WalletPlugin;
+}
+
 export default WalletPlugin;
