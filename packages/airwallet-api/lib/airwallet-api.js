@@ -738,10 +738,12 @@ class MetaphiWalletApi {
         data: data,
       };
       const response = await axios(config);
-      if (!response.data.success) {
+      console.log("Wallet Patched: ", response.data);
+      if (!response.data.jwt) {
         throw new Error("Error uploading share to Metaphi");
       }
       this._logger(`Successfully uploaded share to Metaphi`);
+      this._setAuthenticatedJwt(response.data.jwt);
     } catch (ex) {
       this._logger(`Error uploading share to Metaphi: ${ex.toString()}`);
       throw ex;
