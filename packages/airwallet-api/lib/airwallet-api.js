@@ -13,6 +13,7 @@
 // Device
 import axios from "axios";
 import store from "store";
+import expirePlugin from "store/plugins/expire";
 import Cookies from "js-cookie";
 // Cryptography
 import sss from "shamirs-secret-sharing";
@@ -32,6 +33,7 @@ import { Web3ClientPlugin } from "@maticnetwork/maticjs-web3";
 
 // Initialization
 const common = new Common({ chain: Chain.Mainnet });
+store.addPlugin(expirePlugin);
 
 console.log("Loaded Metaphi Wallet Api.");
 
@@ -620,33 +622,22 @@ class MetaphiWalletApi {
 
   _getAuthenticatedJwt = () => {
     try {
-      const cookieName = this._getAuthenticatedJwtCookieName();
-      return Cookies.get(cookieName);
+      const keyName = this._getAuthenticatedJwtCookieName();
+      return store.get(keyName);
     } catch (ex) {
       return null;
     }
   };
 
   _setAuthenticatedJwt = (jwt) => {
-    const cookieName = this._getAuthenticatedJwtCookieName();
-    console.log("Setting authentication cookie", jwt, cookieName);
-    const expires = 1 / 24;
-    Cookies.set(cookieName, jwt, {
-      expires,
-      path: "",
-      sameSite: "none",
-    }); // Expires in 1 day
-    Cookies.set("hello", jwt, {
-      expires,
-      path: "",
-      sameSite: "none",
-      secure: true,
-    }); // Expires in 1 day
+    const keyName = this._getAuthenticatedJwtCookieName();
+    const expires = new Date().getTime() + 60 * 60000; // Expires in 1 hour.
+    store.set(keyName, jwt, expires);
   };
 
   _resetAuthenticatedJwt = () => {
-    const cookieName = this._getAuthenticatedJwtCookieName();
-    Cookies.remove(cookieName, { path: "" });
+    const keyName = this._getAuthenticatedJwtCookieName();
+    store.remove(keyName);
   };
 
   // Get user details from jwt.

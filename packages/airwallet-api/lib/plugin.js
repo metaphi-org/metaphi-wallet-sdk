@@ -188,9 +188,7 @@ class WalletPlugin {
 
   // Event listener
   _handleLogin = (payload) => {
-    console.log("logged in", payload);
     if (payload.verified) {
-      console.log("verified triggering connect");
       // Trigger connect step.
       return this._connect(payload.email);
     }
