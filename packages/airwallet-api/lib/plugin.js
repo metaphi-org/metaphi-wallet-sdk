@@ -318,6 +318,7 @@ class WalletPlugin {
   };
 }
 
+console.log("Is window?", global.window);
 if (global.window) {
   global.window.WalletPlugin = WalletPlugin;
 }
