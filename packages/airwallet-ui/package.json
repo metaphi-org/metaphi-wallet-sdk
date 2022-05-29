@@ -1,0 +1,45 @@
+{
+  "name": "airwallet-ui",
+  "version": "0.0.4-alpha.0",
+  "description": "> TODO: description",
+  "author": "Akshata <akshatamohanty@gmail.com>",
+  "homepage": "https://github.com/metaphi-org/metaphi-api#readme",
+  "license": "ISC",
+  "main": "dist/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/metaphi-org/metaphi-api.git"
+  },
+  "scripts": {
+    "start": "webpack --watch",
+    "build": "webpack",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/metaphi-org/metaphi-api/issues"
+  },
+  "dependencies": {
+    "install": "^0.13.0",
+    "npm": "^8.11.0",
+    "react": "^18.1.0",
+    "webpack": "^5.72.1"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.18.2",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.2.5",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
+    "mini-css-extract-plugin": "^2.6.0",
+    "webpack-cli": "^4.9.2"
+  }
+}
