@@ -3,13 +3,14 @@ const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
+  mode: "production",
   entry: "./lib/index.js",
-  plugins: [new MiniCssExtractPlugin()],
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "index.js",
     libraryTarget: "commonjs2",
   },
+  plugins: [new MiniCssExtractPlugin()],
   module: {
     rules: [
       {
@@ -19,7 +20,7 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["@babel/preset-env"],
+            presets: ["@babel/preset-env", "@babel/preset-react"],
           },
         },
       },
@@ -27,9 +28,42 @@ module.exports = {
         test: /\.s[ac]ss$/i,
         use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
       },
+      {
+        test: /\.(svg|png|jpg|gif)$/i,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              limit: 8192,
+            },
+          },
+        ],
+      },
     ],
   },
+  resolve: {
+    extensions: ["", ".js", ".jsx"],
+    alias: {
+      react: path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+    },
+  },
   externals: {
-    react: "commonjs react",
+    react: "react",
+    "react-dom": "react-dom",
+
+    // Don't bundle react or react-dom
+    // react: {
+    //   commonjs: "react",
+    //   commonjs2: "react",
+    //   amd: "React",
+    //   root: "React",
+    // },
+    // "react-dom": {
+    //   commonjs: "react-dom",
+    //   commonjs2: "react-dom",
+    //   amd: "ReactDOM",
+    //   root: "ReactDOM",
+    // },
   },
 };

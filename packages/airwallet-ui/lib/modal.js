@@ -1,6 +1,12 @@
 import React from "react";
 // Components.
 import MetaphiModal from "./MetaphiModal.jsx";
+import LoginFormDialog from "./modalContent/LoginFormDialog.jsx";
+import ConnectionInititalizationDialog from "./modalContent/ConnectionInitializationDialog.jsx";
+import ProcessingDialog from "./modalContent/ProcessingDialog.jsx";
+import SuccessDialog from "./modalContent/SuccessDialog.jsx";
+import ErrorDialog from "./modalContent/ErrorDialog.jsx";
+import ConnectDialog from "./modalContent/ConnectDialog.jsx";
 // Styles.
 import "./styles/modal.scss";
 
@@ -75,14 +81,18 @@ const linkButtonStyle = {
 };
 
 class MetaphiInputHandler extends React.Component {
-  constructor() {
-    super();
+  static INPUT_TYPES = {
+    EMAIL: 0,
+    VERIFICATION_CODE: 1,
+    USER_PIN: 2,
+    TRANSACTION_SIGNING: 3,
+  };
+
+  constructor(props) {
+    super(props);
     this.state = {
-      show: false,
-      modalState: 0,
-      email: "",
-      verificationCode: [],
-      userPin: "",
+      show: true,
+      modalState: MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGNING,
     };
     this._resolve = null;
 
@@ -94,65 +104,27 @@ class MetaphiInputHandler extends React.Component {
     this.setState({ show: true });
   }
 
-  handleEmailChange = (e) => {
-    this.setState({ email: e.target.value });
-  };
-
-  handleVerificationCodeChange = (e) => {
-    const index = e.target.id;
-    let code = this.state.verificationCode;
-    code[index] = e.target.value;
-    this.setState({ verificationCode: code });
-    // Focus on the next element
-    if (index < 6) e.target?.nextElementSibling?.focus();
-  };
-
-  handleGetAuthCode = () => {
-    this._resolve(this.state.email);
-  };
-
-  handleVerify = () => {
-    const code = this.state.verificationCode.join("");
-    this._resolve(code);
-  };
-
-  handleUserPin = (e) => {
-    this.setState({ userPin: e.target.value });
-    if (e.target.value.length === 4) {
-      // resolve
-      this._resolve(e.target.value);
-      this.updateState("processing");
-    }
-  };
-
   handleClose = () => {
     this.setState({ show: false });
   };
 
   getEmail = async (msg) => {
-    console.log("getting email");
-    this.setState({ show: true });
-    let self = this;
-    const myPromise = new Promise((resolve, reject) => {
-      self._resolve = resolve;
-    });
-    return myPromise;
+    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.EMAIL);
   };
 
   getVerificationCode = async () => {
-    console.log("getting verification code");
-    this.setState({ modalState: 1 });
-    let self = this;
-    const myPromise = new Promise((resolve, reject) => {
-      self._resolve = resolve;
-    });
-    return myPromise;
+    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.VERIFICATION_CODE);
   };
 
   getUserPin = async () => {
-    console.log("getting user pin");
-    this.setState({ modalState: 2 });
-    let self = this;
+    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.USER_PIN);
+  };
+
+  getUserInput = async (inputType) => {
+    // Setup modal state.
+    this.setState({ show: true, modalState: inputType });
+
+    // Setup promise.
     const myPromise = new Promise((resolve, reject) => {
       self._resolve = resolve;
     });
@@ -172,138 +144,27 @@ class MetaphiInputHandler extends React.Component {
     }
   };
 
-  renderEmail = () => {
-    return (
-      <div>
-        {/** Branding */}
-        <div style={brandingStyle}>
-          <div>Icon</div>
-          <div>Metaphi</div>
-        </div>
-        {/** Blurb */}
-        <div style={headingTextStyle}>
-          To connect to Metaphi, please fill in the details below
-        </div>
-        {/** Email */}
-        <div style={sectionStyle}>
-          <label style={labelStyle}>Email Address</label>
-          <input style={inputStyle} onChange={this.handleEmailChange} />
-          <div style={linkButtonStyle} onClick={this.handleGetAuthCode}>
-            Send Authentication Code
-          </div>
-        </div>
-        {/** Authentication */}
-        <div disabled={this.state.modalState !== 1}>
-          <label style={labelStyle}>Authentication Code</label>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-            }}
-          >
-            <input
-              id="0"
-              type="text"
-              maxLength="1"
-              style={roundedInputStyle}
-              onChange={this.handleVerificationCodeChange}
-            />
-            <input
-              id="1"
-              type="text"
-              maxLength="1"
-              style={roundedInputStyle}
-              onChange={this.handleVerificationCodeChange}
-            />
-            <input
-              id="2"
-              type="text"
-              maxLength="1"
-              style={roundedInputStyle}
-              onChange={this.handleVerificationCodeChange}
-            />
-            <input
-              id="3"
-              type="text"
-              maxLength="1"
-              style={roundedInputStyle}
-              onChange={this.handleVerificationCodeChange}
-            />
-            <input
-              id="4"
-              type="text"
-              maxLength="1"
-              style={roundedInputStyle}
-              onChange={this.handleVerificationCodeChange}
-            />
-            <input
-              id="5"
-              type="text"
-              maxLength="1"
-              style={roundedInputStyle}
-              onChange={this.handleVerificationCodeChange}
-            />
-          </div>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginTop: "48px",
-          }}
-        >
-          {/** Continue */}
-          <button style={mainButtonStyle} onClick={this.handleVerify}>
-            Continue
-          </button>
-          {/** Information Link */}
-          <a
-            style={informationLinkStyle}
-            href="https://metaphi.xyz"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Learn more about Metaphi
-          </a>
-        </div>
-      </div>
-    );
+  renderState = (modalState) => {
+    switch (modalState) {
+      case MetaphiInputHandler.INPUT_TYPES.EMAIL:
+        return <LoginFormDialog />;
+      case MetaphiInputHandler.INPUT_TYPES.VERIFICATION_CODE:
+        return <LoginFormDialog />;
+      case MetaphiInputHandler.INPUT_TYPES.USER_PIN:
+        return <ConnectionInitializationDialog />;
+      case MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGNING:
+        return <TransactionSigningDialog />;
+      default:
+        break;
+    }
   };
-
-  renderKeyConstruction() {
-    // TODO
-    return (
-      <div>
-        Constructing Key
-        <input onChange={this.handleUserPin} />
-      </div>
-    );
-  }
-
-  renderProcessing() {
-    return <div>Processing...</div>;
-  }
-
-  renderSuccess() {
-    return <div>Wallet Connected!</div>;
-  }
-
-  renderTransactionSigning() {
-    // TODO
-  }
 
   render() {
     if (!this.state.show) return null;
 
     return (
-      <MetaphiModal>
-        {/** Modal Content */}
-        {this.state.modalState < 2 && this.renderEmail()}
-        {this.state.modalState === 2 && this.renderKeyConstruction()}
-        {this.state.modalState === 3 && this.renderProcessing()}
-        {this.state.modalState === 4 && this.renderSuccess()}
-        {this.state.modalState === 5 && this.renderTransactionSigning()}
+      <MetaphiModal onClose={this.handleClose}>
+        <div>{this.renderState(this.state.modalState)}</div>
       </MetaphiModal>
     );
   }

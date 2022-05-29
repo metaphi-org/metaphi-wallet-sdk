@@ -1,4 +1,5 @@
 import React from "react";
+import CloseIcon from "./assets/close.svg";
 import "./styles/modal.scss";
 
 /**
@@ -13,7 +14,9 @@ const MetaphiModal = (props) => {
       {/** Modal */}
       <div className="modal-body-wrapper">
         {/** Modal Close Button */}
-        <div className="modal-btn-close">x</div>
+        <div className="modal-btn-close" onClick={props.onClose}>
+          <img src={CloseIcon} width="48px" height="48px" />
+        </div>
         {/** Modal Wrapper */}
         <div className="modal-content-wrapper">
           {/** Modal Content */}
