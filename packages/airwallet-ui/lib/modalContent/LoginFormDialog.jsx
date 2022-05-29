@@ -90,7 +90,7 @@ const MetaphiInfoLink = () => {
 };
 
 const LoginFormDialog = (props) => {
-  // const [mode, setMode] = React.useState("email"); // verification
+  const [mode, setMode] = React.useState("email"); // verification
   // const [email, setEmail] = useState("");
   // const [verificationCode, setVerificationCode] = useState([]);
 
