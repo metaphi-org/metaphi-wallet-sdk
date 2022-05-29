@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 
 const Input = ({ label, onChange }) => {
@@ -90,9 +90,13 @@ const MetaphiInfoLink = () => {
 };
 
 const LoginFormDialog = (props) => {
-  const [mode, setMode] = useState("email"); // verification
-  const [email, setEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState([]);
+  // const [mode, setMode] = React.useState("email"); // verification
+  // const [email, setEmail] = useState("");
+  // const [verificationCode, setVerificationCode] = useState([]);
+
+  React.useEffect(() => {
+    console.log("Hello, World Component loaded");
+  }, []);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);

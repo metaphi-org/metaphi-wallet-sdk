@@ -3,6 +3,7 @@ import React from "react";
 import MetaphiModal from "./MetaphiModal.jsx";
 import LoginFormDialog from "./modalContent/LoginFormDialog.jsx";
 import ConnectionInititalizationDialog from "./modalContent/ConnectionInitializationDialog.jsx";
+import TransactionSigningDialog from "./modalContent/TransactionSigningDialog.jsx";
 import ProcessingDialog from "./modalContent/ProcessingDialog.jsx";
 import SuccessDialog from "./modalContent/SuccessDialog.jsx";
 import ErrorDialog from "./modalContent/ErrorDialog.jsx";
@@ -124,6 +125,8 @@ class MetaphiInputHandler extends React.Component {
     // Setup modal state.
     this.setState({ show: true, modalState: inputType });
 
+    const self = this;
+    console.log(this);
     // Setup promise.
     const myPromise = new Promise((resolve, reject) => {
       self._resolve = resolve;
@@ -138,6 +141,7 @@ class MetaphiInputHandler extends React.Component {
 
       // hide modal.
       const self = this;
+      console.log(this);
       setTimeout(() => {
         self.setState({ show: false });
       }, 1000);
