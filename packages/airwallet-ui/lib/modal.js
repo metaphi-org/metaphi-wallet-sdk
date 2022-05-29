@@ -1,47 +1,8 @@
 import React from "react";
-
-const modalStyle = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  height: "100%",
-  width: "100%",
-};
-
-const modalBackgroundStyle = {
-  position: "absolute",
-  background: "black",
-  opacity: 0.9,
-  height: "100vh",
-  width: "100%",
-  zIndex: 1,
-};
-
-const modalBodyWrapperStyle = {
-  position: "relative",
-  maxWidth: "547px",
-  margin: "82px auto",
-  zIndex: 2,
-};
-
-const modalCloseIconStyle = {
-  width: "48px",
-  height: "48px",
-  background: "white",
-  borderRadius: "50%",
-  color: "black",
-  margin: "16px auto",
-  textAlign: "center",
-  cursor: "pointer",
-};
-
-const modalWrapperStyle = {
-  border: "1px solid gray",
-  borderRadius: "24px",
-  padding: "48px",
-  color: "white",
-  background: "black",
-};
+// Components.
+import MetaphiModal from "./MetaphiModal.jsx";
+// Styles.
+import "./styles/modal.scss";
 
 const informationLinkStyle = {
   color: "pink",
@@ -113,7 +74,7 @@ const linkButtonStyle = {
   marginTop: "24px",
 };
 
-class MetaphiModal extends React.Component {
+class MetaphiInputHandler extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -124,6 +85,8 @@ class MetaphiModal extends React.Component {
       userPin: "",
     };
     this._resolve = null;
+
+    // Append to window, to control state from outside.
     if (global.window) window.MetaphiModal = this;
   }
 
@@ -334,28 +297,16 @@ class MetaphiModal extends React.Component {
     if (!this.state.show) return null;
 
     return (
-      <div style={modalStyle}>
-        {/** Modal Background */}
-        <div style={modalBackgroundStyle}></div>
-        {/** Modal */}
-        <div style={modalBodyWrapperStyle}>
-          {/** Modal Close Button */}
-          <div style={modalCloseIconStyle}>x</div>
-          {/** Modal Wrapper */}
-          <div style={modalWrapperStyle}>
-            {/** Modal Content */}
-            <div>
-              {this.state.modalState < 2 && this.renderEmail()}
-              {this.state.modalState === 2 && this.renderKeyConstruction()}
-              {this.state.modalState === 3 && this.renderProcessing()}
-              {this.state.modalState === 4 && this.renderSuccess()}
-              {this.state.modalState === 5 && this.renderTransactionSigning()}
-            </div>
-          </div>
-        </div>
-      </div>
+      <MetaphiModal>
+        {/** Modal Content */}
+        {this.state.modalState < 2 && this.renderEmail()}
+        {this.state.modalState === 2 && this.renderKeyConstruction()}
+        {this.state.modalState === 3 && this.renderProcessing()}
+        {this.state.modalState === 4 && this.renderSuccess()}
+        {this.state.modalState === 5 && this.renderTransactionSigning()}
+      </MetaphiModal>
     );
   }
 }
 
-export default MetaphiModal;
+export default MetaphiInputHandler;
