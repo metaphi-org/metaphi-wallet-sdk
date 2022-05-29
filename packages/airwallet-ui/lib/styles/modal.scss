@@ -1,4 +1,12 @@
-.metaphi * {
+$accent-color: #9228e8;
+
+.metaphi {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+
   .modal {
     position: absolute;
     top: 0;
@@ -6,7 +14,9 @@
     height: 100%;
     width: 100%;
   }
+}
 
+.metaphi * {
   .modal-background {
     position: absolute;
     background: black;
@@ -24,13 +34,9 @@
   }
 
   .modal-btn-close {
-    width: 48px;
-    height: 48px;
-    background: white;
-    border-radius: 50%;
-    color: black;
     margin: 16px auto;
     text-align: center;
+    cursor: pointer;
   }
 
   .modal-content-wrapper {
@@ -39,5 +45,86 @@
     padding: 48px;
     color: white;
     background: black;
+    max-width: 547px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 16px 0;
+
+    .branding {
+      margin-left: 16px;
+      font-size: 24px;
+      line-height: 36px;
+    }
+  }
+
+  .modal-description {
+    text-align: center;
+    margin: 8px 0;
+    font-size: 20px;
+    line-height: 30px;
+  }
+
+  .modal-cta-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .text-link {
+    display: block;
+    color: $accent-color;
+    text-decoration: underline;
+    text-align: center;
+    margin-top: 36px;
+  }
+
+  .modal-section {
+    margin: 16px 0;
+  }
+
+  label {
+    font-size: 20px;
+    line-height: 30px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    height: 64px;
+    margin: 8px 0;
+    padding: 17px 24px;
+    color: white;
+    font-size: 20px;
+    line-height: 30px;
+    border-radius: 24px;
+    background: #1f1f1f;
+    outline: none;
+  }
+
+  /** Button Styles */
+  .btn.btn--text {
+    text-decoration: underline;
+    font-size: 20px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .btn.btn--primary {
+    font-size: 20px;
+    background: $accent-color;
+    cursor: pointer;
+  }
+
+  .btn.btn--secondary {
+    font-size: 20px;
+    cursor: pointer;
   }
 }

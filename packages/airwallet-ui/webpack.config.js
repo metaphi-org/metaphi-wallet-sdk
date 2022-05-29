@@ -6,6 +6,7 @@ module.exports = {
   mode: "production",
   entry: "./lib/index.js",
   output: {
+    publicPath: "",
     path: path.resolve(__dirname, "dist"),
     filename: "index.js",
     libraryTarget: "commonjs2",
@@ -34,7 +35,8 @@ module.exports = {
           {
             loader: "url-loader",
             options: {
-              limit: 8192,
+              limit: 12000,
+              name: "[hash]-[name].[ext]",
             },
           },
         ],

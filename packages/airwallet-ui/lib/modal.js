@@ -9,7 +9,7 @@ import SuccessDialog from "./modalContent/SuccessDialog.jsx";
 import ErrorDialog from "./modalContent/ErrorDialog.jsx";
 import ConnectDialog from "./modalContent/ConnectDialog.jsx";
 // Styles.
-import "./styles/modal.scss";
+import "./styles/index.scss";
 
 const informationLinkStyle = {
   color: "pink",
@@ -93,7 +93,7 @@ class MetaphiInputHandler extends React.Component {
     super(props);
     this.state = {
       show: true,
-      modalState: MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGNING,
+      modalState: MetaphiInputHandler.INPUT_TYPES.EMAIL,
     };
     this._resolve = null;
 

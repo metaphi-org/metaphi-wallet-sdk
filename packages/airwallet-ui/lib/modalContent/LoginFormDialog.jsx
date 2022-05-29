@@ -1,85 +1,13 @@
 import React from "react";
+import TextButton from "../components/TextButton.jsx";
 import PrimaryButton from "../components/PrimaryButton.jsx";
-
-const Input = ({ label, onChange }) => {
-  return (
-    <div>
-      <label>{label}</label>
-      <input onChange={onChange} />
-    </div>
-  );
-};
-
-const NumericInput = ({ label }) => {
-  return (
-    <div>
-      <label>{label}</label>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
-        <input
-          id="0"
-          type="text"
-          maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
-        />
-        <input
-          id="1"
-          type="text"
-          maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
-        />
-        <input
-          id="2"
-          type="text"
-          maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
-        />
-        <input
-          id="3"
-          type="text"
-          maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
-        />
-        <input
-          id="4"
-          type="text"
-          maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
-        />
-        <input
-          id="5"
-          type="text"
-          maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
-        />
-      </div>
-    </div>
-  );
-};
-
-const TextButton = ({ text, onClick }) => {
-  return (
-    <div className="btn btn--text" onClick={onClick}>
-      {text}
-    </div>
-  );
-};
+import Input from "../components/Input.jsx";
+import NumericInput from "../components/NumericInput.jsx";
 
 const MetaphiInfoLink = () => {
   return (
     <a
-      className="link"
+      className="text-link"
       href="https://metaphi.xyz"
       target="_blank"
       rel="noreferrer"
@@ -90,16 +18,12 @@ const MetaphiInfoLink = () => {
 };
 
 const LoginFormDialog = (props) => {
-  const [mode, setMode] = React.useState("email"); // verification
+  // const [mode, setMode] = React.useState("email"); // verification
   // const [email, setEmail] = useState("");
   // const [verificationCode, setVerificationCode] = useState([]);
 
-  React.useEffect(() => {
-    console.log("Hello, World Component loaded");
-  }, []);
-
   const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+    // setEmail(e.target.value);
   };
 
   const handleVerificationCodeChange = (e) => {
@@ -125,12 +49,13 @@ const LoginFormDialog = (props) => {
       </div>
 
       {/** Email */}
-      {/* <div class="modal-section">
-        <TextButton text="Get Authorization Code" onClick={resolve} />
-      </div> */}
+      <div className="modal-section">
+        <Input label="Email Address" onChange={handleEmailChange} />
+        <TextButton text="Send Authorization Code" onClick={resolve} />
+      </div>
 
       {/** Authentication */}
-      {/* <div class="modal-section">
+      {/* <div className="modal-section">
         <NumericInput
           label="Authentication Code"
           onChange={handleVerificationCodeChange}
