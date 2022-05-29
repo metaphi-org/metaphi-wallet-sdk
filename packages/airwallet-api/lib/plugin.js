@@ -17,6 +17,7 @@ class WalletPlugin {
   _isLoaded = false;
   _wallet = {};
   _provider = null;
+  _userInputMethod = null;
 
   constructor(options) {
     this._options = options;
@@ -26,6 +27,11 @@ class WalletPlugin {
     this._provider = new Web3(
       new Web3.providers.HttpProvider(options.networkConfig.rpcUrl)
     );
+
+    console.log("Wallet Options", options);
+    if (options.custom.userInputMethod) {
+      this._userInputMethod = options.custom.userInputMethod;
+    }
   }
 
   /** Public Functions */
@@ -35,7 +41,9 @@ class WalletPlugin {
       throw new Error("Metaphi Wallet should be initialized client-side.");
     }
 
-    if (!document.getElementById(WALLET_EMBED_ID)) {
+    const embed = document.getElementById(WALLET_EMBED_ID);
+    const root = document.getElementById("mWalletContainer");
+    if (!embed) {
       // Setup iframe.
       const ifrm = document.createElement("iframe");
       ifrm.setAttribute("id", WALLET_EMBED_ID);
@@ -44,7 +52,7 @@ class WalletPlugin {
       ifrm.setAttribute("height", 0);
       ifrm.setAttribute("width", 0);
       ifrm.setAttribute("style", "position: absolute; top: 0; left: 0;");
-      document.getElementById("mWalletContainer").appendChild(ifrm); // to place at end of document
+      root.appendChild(ifrm); // to place at end of document
 
       // Setup listener, for callbacks.
       window.addEventListener("message", this._receiveMessage);
@@ -97,8 +105,8 @@ class WalletPlugin {
    * @param {Object} payload  { message: String }
    * @param {function} callback
    */
-  signMessage = (payload, callback) => {
-    const ok = confirm("Sign this message?");
+  signMessage = async (payload, callback) => {
+    const ok = await this.getUserInput("signMessage");
     if (!ok) {
       if (callback) callback({ err: "User didnot authorize signing." });
     }
@@ -111,8 +119,8 @@ class WalletPlugin {
    * @param {Object} payload  { transaction: Object }
    * @param {Function} callback
    */
-  signTransation = (payload, callback) => {
-    const ok = confirm("Sign this transaction?");
+  signTransaction = async (payload, callback) => {
+    const ok = await this.getUserInput("signTransaction");
     if (!ok) {
       if (callback) callback({ err: "User didnot authorize signing." });
     }
@@ -136,6 +144,63 @@ class WalletPlugin {
    */
   getProvider = () => {
     return this._provider;
+  };
+
+  /**
+   *
+   * @param {*} callback
+   */
+  getUserInput = async (inputType) => {
+    // TODO: Add backup for when user input is not available
+    if (!this._userInputMethod) {
+      return await this.getUserInputDefault(inputType);
+    }
+
+    let value;
+    switch (inputType.toLowerCase()) {
+      case "email":
+        value = await this._userInputMethod.getEmail();
+        break;
+      case "verificationcode":
+        value = await this._userInputMethod.getVerificationCode();
+        break;
+      case "pin":
+        value = await this._userInputMethod.getUserPin();
+        break;
+      case "signmessage":
+        value = confirm("Sign this message?");
+        break;
+      case "signtransaction":
+        value = confirm("Sign this transaction?");
+        break;
+    }
+    return value;
+  };
+
+  getUserInputDefault = (inputType) => {
+    let value;
+    switch (inputType.toLowerCase()) {
+      case "email":
+        value = prompt("Please enter your email.");
+        break;
+      case "verificationcode":
+        value = prompt("Please enter authorization code send to your email.");
+        break;
+      case "pin":
+        value = prompt("Please enter your 6-digit pin.");
+        break;
+      case "signmessage":
+        value = confirm("Sign this message?");
+        break;
+      case "signtransaction":
+        value = confirm("Sign this transaction?");
+        break;
+    }
+    return value;
+  };
+
+  showUserMessage = () => {
+    this._userInputMethod.updateState("success");
   };
 
   // Internal. Only exposed, for testing.
@@ -190,11 +255,11 @@ class WalletPlugin {
   };
 
   // Event
-  _login = () => {
-    const email = prompt(
-      "Please enter your email.",
-      "akshatamohanty+demo@gmail.com"
-    );
+  _login = async () => {
+    const email = await this.getUserInput("email");
+    if (!email) return;
+
+    // Login event.
     const payload = { email };
     this._sendEvent({ event: "login", payload });
   };
@@ -216,11 +281,8 @@ class WalletPlugin {
   };
 
   // Event
-  _verify = (email) => {
-    const verificationCode = prompt(
-      "Enter verification code from your email",
-      "1234"
-    );
+  _verify = async (email) => {
+    const verificationCode = await this.getUserInput("verificationCode");
     const payload = {
       email,
       verificationCode,
@@ -247,14 +309,15 @@ class WalletPlugin {
   };
 
   // Event.
-  _connect = (email) => {
-    const userPin = prompt("Enter your pin", "1234");
+  _connect = async (email) => {
+    const userPin = await this.getUserInput("Pin");
     const payload = { email, userPin };
     this._sendEvent({ event: "connect", payload });
   };
 
   // Listener.
   _handleConnect = (payload) => {
+    this.showUserMessage();
     this._wallet.address = payload.address;
   };
 
@@ -318,7 +381,7 @@ class WalletPlugin {
   };
 }
 
-console.log("Is window?", global.window);
+console.log("Is window?", !!global.window);
 if (global.window) {
   global.window.WalletPlugin = WalletPlugin;
 }
