@@ -1,8 +1,7 @@
-import React from "react";
+import {useState} from "react";
 
 const NumericInput = ({ label, maxLength, onInputChange }) => {
-  // const [code, setCode] = useState([]);
-  let setCode;
+  const [code, setCode] = useState([]);
 
   const onChange = (e) => {
     const index = e.target.id;

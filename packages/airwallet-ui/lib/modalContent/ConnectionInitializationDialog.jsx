@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 
 const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {

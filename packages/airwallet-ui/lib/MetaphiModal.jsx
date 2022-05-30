@@ -1,7 +1,6 @@
 import React from "react";
 import CloseIcon from "./assets/close.svg";
 import MetaphiLogo from "./assets/metaphi-logo.png";
-
 /**
  * Wrapper component for modal.
  *
