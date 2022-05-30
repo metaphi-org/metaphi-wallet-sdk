@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 
-MAX_PIN_LENGTH = 6
+const MAX_PIN_LENGTH = 6
 
 const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
   const [activeStep, setActiveStep] = useState(0);
