@@ -21,7 +21,7 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["@babel/preset-env", "@babel/preset-react"],
+            presets: ["@babel/preset-env", ["@babel/preset-react", { "runtime": "automatic" }]],
           },
         },
       },
@@ -51,7 +51,7 @@ module.exports = {
     ],
   },
   externals: {
-    'react': 'React', // Case matters here 
+    'react': 'react', // Case matters here 
     'react-dom' : 'reactDOM' // Case matters here 
   },
 };
