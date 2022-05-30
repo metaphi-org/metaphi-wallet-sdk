@@ -39,14 +39,8 @@ module.exports = {
       },
     ],
   },
-  // TODO: Only for dev
-  resolve: {
-    alias:  {
-      'react': path.join(process.cwd(), 'node_modules/react')
-    }
-  },
   externals: {
-    // Don't bundle react or react-dom
+    Don't bundle react or react-dom
     react: {
       commonjs: "react",
       commonjs2: "react",
