@@ -26,7 +26,7 @@ class MetaphiInputHandler extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      show: true,
+      show: false,
       modalState: MetaphiInputHandler.INPUT_TYPES.SUCCESS,
     };
     this._resolve = null;
