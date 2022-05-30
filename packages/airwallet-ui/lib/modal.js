@@ -29,9 +29,9 @@ class MetaphiInputHandler extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      show: true,
-      modalState: 4,
-      modalProps: { address: '0xxx', dapp: 'pegaxy'}
+      show: false,
+      modalState: null,
+      modalProps: {}
     };
     this._resolve = null;
 
@@ -87,11 +87,11 @@ class MetaphiInputHandler extends React.Component {
     return myPromise;
   };
 
-  updateState = (state) => {
+  updateState = (state, modalProps) => {
     if (state === "processing")
       this.setState({ modalState: MetaphiInputHandler.INPUT_TYPES.PROCESSING });
     if (state === "success") {
-      this.setState({ modalState: MetaphiInputHandler.INPUT_TYPES.SUCCESS });
+      this.setState({ modalState: MetaphiInputHandler.INPUT_TYPES.SUCCESS, modalProps });
 
       // hide modal.
       const self = this;
@@ -105,12 +105,12 @@ class MetaphiInputHandler extends React.Component {
     const dialogProps = this.state.modalProps
 
     switch (modalState) {
-      // case MetaphiInputHandler.INPUT_TYPES.EMAIL:
-      //   return <LoginFormDialog mode={0} resolve={this._resolve} />;
-      // case MetaphiInputHandler.INPUT_TYPES.VERIFICATION_CODE:
-      //   return <LoginFormDialog mode={1} resolve={this._resolve} />;
-      // case MetaphiInputHandler.INPUT_TYPES.USER_PIN:
-      //   return <ConnectionInitializationDialog resolve={this._resolve} />;
+      case MetaphiInputHandler.INPUT_TYPES.EMAIL:
+        return <LoginFormDialog mode={0} resolve={this._resolve} />;
+      case MetaphiInputHandler.INPUT_TYPES.VERIFICATION_CODE:
+        return <LoginFormDialog mode={1} resolve={this._resolve} />;
+      case MetaphiInputHandler.INPUT_TYPES.USER_PIN:
+        return  <ConnectionInitializationDialog resolve={this._resolve} {...dialogProps} />;
       case MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGN:
         return <TransactionSigningDialog resolve={this._resolve} {...dialogProps} onClose={this.handleClose}/>;
       case MetaphiInputHandler.INPUT_TYPES.SUCCESS:

@@ -25,8 +25,10 @@ const MetaphiInfoLink = () => {
  * @returns 
  */
 const LoginFormDialog = ({ mode, resolve }) => {
-  // const [value, setValue] = useState("");
-  let value, setValue
+  const [value, setValue] = useState("");
+  const [codeSent, setCodeSent] = useState(false)
+
+  const text = codeSent ? "Didn\'t get a code? Resend Code" : "Send Authorization Code"
 
   return (
     <div>
@@ -38,7 +40,10 @@ const LoginFormDialog = ({ mode, resolve }) => {
       {/** Email */}
       <div className="modal-section">
         <Input label="Email Address" onChange={setValue} />
-        <TextButton text="Send Authorization Code" onClick={resolve} />
+        <TextButton text={text} onClick={() => {
+          setCodeSent(true)
+          resolve(value)
+        }} />
       </div>
 
       {/** Authentication */}
@@ -55,7 +60,7 @@ const LoginFormDialog = ({ mode, resolve }) => {
         {/** Continue */}
         <PrimaryButton
           disabled={mode === 0 || value?.length < 6}
-          onClick={resolve}
+          onClick={() => resolve(value)}
         >
           Continue
         </PrimaryButton>

@@ -1,13 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 
+MAX_PIN_LENGTH = 6
+
 const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
-  const [activeStep, setActiveStep] = useState();
+  const [activeStep, setActiveStep] = useState(0);
   const [userPin, setUserPin] = useState();
+  const [timer, setTimer]  = useState()
+
+  const isActive = activeStep < 5
+  useEffect(() => {
+    let interval = null;
+
+    if (isActive) {
+      interval = setInterval(() => {
+        if (timer % 5 === 0 && activeStep != 3) setActiveStep(activeStep + 1)
+        setTimer(timer => timer + 1);
+      }, 1000);
+    } 
+
+    return () => clearInterval(interval);
+  }, [isActive, timer, activeStep]);
 
   const handleUserPin = (e) => {
     setUserPin(e.target.value);
-    if (e.target.value.length === 4) {
+    if (e.target.value.length === MAX_PIN_LENGTH) {
       setActiveStep(4);
     }
   };

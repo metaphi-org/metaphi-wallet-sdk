@@ -37,6 +37,17 @@ module.exports = {
           name: "public/[name].[ext]",
         },
       },
+      {
+        type: 'javascript/auto',
+        test: /\.json$/,
+        include: /(lottie)/,
+        loader: 'lottie-web-webpack-loader',
+        options: {
+          assets: {
+            scale: 0.5 // proportional resizing multiplier
+          }
+        }
+      }
     ],
   },
   externals: {
