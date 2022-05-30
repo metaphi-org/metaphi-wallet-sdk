@@ -106,7 +106,7 @@ class WalletPlugin {
    * @param {function} callback
    */
   signMessage = async (payload, callback) => {
-    const ok = await this.getUserInput("signMessage");
+    const ok = await this.getUserInput("signMessage", payload);
     if (!ok) {
       if (callback) callback({ err: "User didnot authorize signing." });
     }
@@ -120,7 +120,7 @@ class WalletPlugin {
    * @param {Function} callback
    */
   signTransaction = async (payload, callback) => {
-    const ok = await this.getUserInput("signTransaction");
+    const ok = await this.getUserInput("signTransaction", payload);
     if (!ok) {
       if (callback) callback({ err: "User didnot authorize signing." });
     }
@@ -150,7 +150,7 @@ class WalletPlugin {
    *
    * @param {*} callback
    */
-  getUserInput = async (inputType) => {
+  getUserInput = async (inputType, payload = {}) => {
     // TODO: Add backup for when user input is not available
     if (!this._userInputMethod) {
       return await this.getUserInputDefault(inputType);
@@ -159,19 +159,19 @@ class WalletPlugin {
     let value;
     switch (inputType.toLowerCase()) {
       case "email":
-        value = await this._userInputMethod.getEmail();
+        value = await this._userInputMethod.getEmail(payload);
         break;
       case "verificationcode":
-        value = await this._userInputMethod.getVerificationCode();
+        value = await this._userInputMethod.getVerificationCode(payload);
         break;
       case "pin":
-        value = await this._userInputMethod.getUserPin();
+        value = await this._userInputMethod.getUserPin(payload);
         break;
       case "signmessage":
-        value = confirm("Sign this message?");
+        value = await this._userInputMethod.getUserSigningConfirmation(payload);
         break;
       case "signtransaction":
-        value = confirm("Sign this transaction?");
+        value = await this._userInputMethod.getUserTransactionConfirmation(payload);
         break;
     }
     return value;
@@ -197,10 +197,6 @@ class WalletPlugin {
         break;
     }
     return value;
-  };
-
-  showUserMessage = () => {
-    this._userInputMethod.updateState("success");
   };
 
   // Internal. Only exposed, for testing.
@@ -313,12 +309,14 @@ class WalletPlugin {
     const userPin = await this.getUserInput("Pin");
     const payload = { email, userPin };
     this._sendEvent({ event: "connect", payload });
+    this._userInputMethod.updateState("processing");
+
   };
 
   // Listener.
   _handleConnect = (payload) => {
-    this.showUserMessage();
     this._wallet.address = payload.address;
+    this._userInputMethod.updateState("success", { address: payload.address });
   };
 
   _handleDisconnect = () => {
@@ -381,9 +379,10 @@ class WalletPlugin {
   };
 }
 
-console.log("Is window?", !!global.window);
+
 if (global.window) {
   global.window.WalletPlugin = WalletPlugin;
+  console.log("Metaphi is loaded.", !!global.window.WalletPlugin);
 }
 
 export default WalletPlugin;
