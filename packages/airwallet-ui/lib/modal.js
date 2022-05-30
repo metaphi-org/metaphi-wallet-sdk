@@ -11,6 +11,9 @@ import ConnectDialog from "./modalContent/ConnectDialog.jsx";
 // Styles.
 import "./styles/index.scss";
 
+/**
+ * Handles all inputs from the user.
+ */
 class MetaphiInputHandler extends React.Component {
   static INPUT_TYPES = {
     EMAIL: 0,
@@ -26,15 +29,17 @@ class MetaphiInputHandler extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      show: false,
-      modalState: MetaphiInputHandler.INPUT_TYPES.SUCCESS,
+      show: true,
+      modalState: 4,
+      modalProps: { address: '0xxx', dapp: 'pegaxy'}
     };
     this._resolve = null;
 
-    // Append to window, to control state from outside.
+    // Append to window, enables controlling state from outside.
     if (global.window) window.MetaphiModal = this;
   }
 
+  /** Visibility functions. */
   show() {
     this.setState({ show: true });
   }
@@ -43,7 +48,8 @@ class MetaphiInputHandler extends React.Component {
     this.setState({ show: false });
   };
 
-  getEmail = async (msg) => {
+  /** Convenience functions. */
+  getEmail = async () => {
     return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.EMAIL);
   };
 
@@ -55,12 +61,26 @@ class MetaphiInputHandler extends React.Component {
     return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.USER_PIN);
   };
 
-  getUserInput = async (inputType) => {
-    // Setup modal state.
-    this.setState({ show: true, modalState: inputType });
+  getUserSigningConfirmation = async (payload) => {
+    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGN, payload);
+  }
 
-    const self = this;
+
+  getUserTransactionConfirmation = async (payload) => {
+    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGN, payload);
+  }
+
+  /** Internal functions. */
+  getUserInput = async (inputType, payload) => {
+    if (inputType === undefined) {
+      throw new Error('Invalid Input Requested.')
+    }
+
+    // Setup modal state.
+    this.setState({ show: true, modalState: inputType, modalProps: payload });
+
     // Setup promise.
+    const self = this;
     const myPromise = new Promise((resolve, reject) => {
       self._resolve = resolve;
     });
@@ -82,17 +102,19 @@ class MetaphiInputHandler extends React.Component {
   };
 
   renderState = (modalState) => {
+    const dialogProps = this.state.modalProps
+
     switch (modalState) {
-      case MetaphiInputHandler.INPUT_TYPES.EMAIL:
-        return <LoginFormDialog mode={0} resolve={this._resolve} />;
-      case MetaphiInputHandler.INPUT_TYPES.VERIFICATION_CODE:
-        return <LoginFormDialog mode={1} resolve={this._resolve} />;
-      case MetaphiInputHandler.INPUT_TYPES.USER_PIN:
-        return <ConnectionInitializationDialog resolve={this._resolve} />;
-      case MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGNING:
-        return <TransactionSigningDialog resolve={this._resolve} />;
+      // case MetaphiInputHandler.INPUT_TYPES.EMAIL:
+      //   return <LoginFormDialog mode={0} resolve={this._resolve} />;
+      // case MetaphiInputHandler.INPUT_TYPES.VERIFICATION_CODE:
+      //   return <LoginFormDialog mode={1} resolve={this._resolve} />;
+      // case MetaphiInputHandler.INPUT_TYPES.USER_PIN:
+      //   return <ConnectionInitializationDialog resolve={this._resolve} />;
+      case MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGN:
+        return <TransactionSigningDialog resolve={this._resolve} {...dialogProps} onClose={this.handleClose}/>;
       case MetaphiInputHandler.INPUT_TYPES.SUCCESS:
-        return <SuccessDialog dapp={"Pegaxy"} onClose={this.handleClose} />;
+        return <SuccessDialog {...dialogProps} onClose={this.handleClose} />;
       case MetaphiInputHandler.INPUT_TYPES.PROCESSING:
         return <ProcessingDialog />;
       case MetaphiInputHandler.INPUT_TYPES.ERROR:

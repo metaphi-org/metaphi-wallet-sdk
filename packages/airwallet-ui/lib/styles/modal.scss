@@ -6,6 +6,7 @@ $accent-color: #9228e8;
   left: 0;
   height: 100%;
   width: 100%;
+  font-family: 'Work Sans', sans-serif;;
 
   .modal {
     position: absolute;
@@ -17,6 +18,16 @@ $accent-color: #9228e8;
 }
 
 .metaphi * {
+  .modal-label {
+    font-size: 20px; 
+    line-height: 30px; 
+  }
+
+  .modal-text {
+    font-size: 24px; 
+    line-height: 36px; 
+  }
+  
   .modal-background {
     position: absolute;
     background: black;
@@ -69,8 +80,8 @@ $accent-color: #9228e8;
   .modal-description {
     text-align: center;
     margin: 8px 0;
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 24px;
+    line-height: 36px;
   }
 
   .modal-cta-wrapper {
@@ -107,7 +118,6 @@ $accent-color: #9228e8;
     align-items: center;
     padding: 24px 32px;
     width: 354px;
-    height: 114px;
     border: 1px solid #343434;
     border-radius: 24px;
     margin: 0 auto;

@@ -1,4 +1,4 @@
-import  { useState } from "react";
+// import  { useState } from "react";
 import TextButton from "../components/TextButton.jsx";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 import Input from "../components/Input.jsx";
@@ -17,8 +17,16 @@ const MetaphiInfoLink = () => {
   );
 };
 
+/**
+ * Modal to get user input for email or verification code.
+ * 
+ * @param {mode} emailOrVerificationMode: 0 or 1 
+ * @param {resolve} promise 
+ * @returns 
+ */
 const LoginFormDialog = ({ mode, resolve }) => {
-  const [value, setValue] = useState("");
+  // const [value, setValue] = useState("");
+  let value, setValue
 
   return (
     <div>

@@ -33,14 +33,14 @@ module.exports = {
         test: /\.(jpe?g|png|gif|svg)$/i,
         loader: "url-loader",
         options: {
-          limit: 8000, // Convert images < 8kb to base64 strings
-          name: "images/[name].[ext]",
+          limit: 80000, // Convert images < 8kb to base64 strings
+          name: "public/[name].[ext]",
         },
       },
     ],
   },
   externals: {
-    Don't bundle react or react-dom
+    // Don't bundle react or react-dom
     react: {
       commonjs: "react",
       commonjs2: "react",

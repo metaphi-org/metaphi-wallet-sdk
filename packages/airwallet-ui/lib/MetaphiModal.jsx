@@ -1,6 +1,8 @@
 import React from "react";
 import CloseIcon from "./assets/close.svg";
-import MetaphiLogo from "./assets/metaphi-logo.png";
+// import MetaphiLogo from "./assets/metaphi-logo.png";
+
+const LOGO_URL = 'https://metaphi.xyz/_next/static/media/logo.08901042.png'
 /**
  * Wrapper component for modal.
  *
@@ -21,7 +23,7 @@ const MetaphiModal = (props) => {
           <div className="modal-content-wrapper">
             <div className="modal-header">
               <div className="logo">
-                <img src={MetaphiLogo} width="40px" height="40px" />
+                <img src={LOGO_URL} width="40px" height="40px" />
               </div>
               <div className="branding">Metaphi</div>
             </div>
