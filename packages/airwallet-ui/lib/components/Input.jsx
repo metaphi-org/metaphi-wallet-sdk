@@ -4,7 +4,7 @@ const Input = ({ label, onChange }) => {
   return (
     <>
       <label>{label}</label>
-      <input type="text" onChange={onChange} />
+      <input type="text" onChange={(e) => onChange(e.target.value)} />
     </>
   );
 };

@@ -17,29 +17,8 @@ const MetaphiInfoLink = () => {
   );
 };
 
-const LoginFormDialog = (props) => {
-  // const [mode, setMode] = React.useState("email"); // verification
-  // const [email, setEmail] = useState("");
-  // const [verificationCode, setVerificationCode] = useState([]);
-
-  const handleEmailChange = (e) => {
-    // setEmail(e.target.value);
-  };
-
-  const handleVerificationCodeChange = (e) => {
-    const index = e.target.id;
-    let code = this.state.verificationCode;
-    code[index] = e.target.value;
-    setVerificationCode(code);
-    // Focus on the next element
-    if (index < 6) e.target?.nextElementSibling?.focus();
-  };
-
-  const resolve = () => {
-    if (mode === "email") return props.resolve(email);
-    if (mode === "verification")
-      return props.resolve(verificationCode.join(""));
-  };
+const LoginFormDialog = ({ mode, resolve }) => {
+  const [value, setValue] = useState("");
 
   return (
     <div>
@@ -50,22 +29,28 @@ const LoginFormDialog = (props) => {
 
       {/** Email */}
       <div className="modal-section">
-        <Input label="Email Address" onChange={handleEmailChange} />
+        <Input label="Email Address" onChange={setValue} />
         <TextButton text="Send Authorization Code" onClick={resolve} />
       </div>
 
       {/** Authentication */}
-      {/* <div className="modal-section">
-        <NumericInput
-          label="Authentication Code"
-          onChange={handleVerificationCodeChange}
-        />
-      </div> */}
+      <div
+        className={`modal-section modal-section--${
+          mode === 1 ? "active" : "disabled"
+        }`}
+      >
+        <NumericInput label="Authentication Code" onInputChange={setValue} />
+      </div>
 
       {/** CTA */}
       <div className="modal-cta-wrapper">
         {/** Continue */}
-        <PrimaryButton text="Continue" onClick={resolve} />
+        <PrimaryButton
+          disabled={mode === 0 || value?.length < 6}
+          onClick={resolve}
+        >
+          Continue
+        </PrimaryButton>
         {/** Information Link */}
         <MetaphiInfoLink />
       </div>

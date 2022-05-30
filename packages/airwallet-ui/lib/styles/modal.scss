@@ -75,8 +75,42 @@ $accent-color: #9228e8;
 
   .modal-cta-wrapper {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin-top: 32px;
+
+    &.wrapper-row {
+      flex-direction: row;
+      justify-content: space-between;
+
+      .btn {
+        max-width: 200px;
+      }
+    }
+  }
+
+  .flex.flex-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .half-container {
+      width: 50%;
+    }
+  }
+
+  .message-box {
+    background: #1f1f1f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 32px;
+    width: 354px;
+    height: 114px;
+    border: 1px solid #343434;
+    border-radius: 24px;
+    margin: 0 auto;
   }
 
   .text-link {
@@ -88,12 +122,19 @@ $accent-color: #9228e8;
   }
 
   .modal-section {
-    margin: 16px 0;
+    margin: 32px 0;
+
+    &.modal-section--disabled {
+      color: #5c5c5c;
+      opacity: 0.5;
+    }
   }
 
   label {
     font-size: 20px;
     line-height: 30px;
+    color: #eeeeee;
+    margin-bottom: 16px;
   }
 
   input[type="text"] {
@@ -109,6 +150,18 @@ $accent-color: #9228e8;
     outline: none;
   }
 
+  .numeric-input-container {
+    display: "flex";
+    flex-direction: "row";
+    justify-content: "space-between";
+  }
+
+  input.rounded {
+    width: 48px;
+    height: 48px;
+    margin-right: 13px;
+  }
+
   /** Button Styles */
   .btn.btn--text {
     text-decoration: underline;
@@ -118,13 +171,105 @@ $accent-color: #9228e8;
   }
 
   .btn.btn--primary {
+    height: 64px;
+    width: 321px;
+    background: #9228e8;
+    border-radius: 24px;
     font-size: 20px;
-    background: $accent-color;
     cursor: pointer;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 8px 4px;
+
+    &.disabled {
+      color: #e9d4fa;
+      background: #c994f4;
+    }
   }
 
   .btn.btn--secondary {
+    height: 64px;
+    width: 321px;
     font-size: 20px;
     cursor: pointer;
+    border: 1.5px solid #3c3c3c;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 24px;
+    margin: 8px 4px;
+  }
+
+  .loading {
+    font-weight: bold;
+    display: inline-block;
+    font-size: 20px;
+    clip-path: inset(0 1.5ch 0 0);
+    animation: l 1s steps(4) infinite;
+  }
+
+  @keyframes l {
+    to {
+      clip-path: inset(0 -1ch 0 0);
+    }
+  }
+
+  .bullet-container {
+    margin-top: 32px;
+  }
+
+  .modal-bullet {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 12px 0;
+
+    &.modal-bullet--complete {
+      .bullet-title {
+        color: #27ae60;
+      }
+
+      .bullet-description {
+        color: #27ae60;
+      }
+    }
+
+    &.modal-bullet--incomplete {
+      opacity: 0.5;
+    }
+
+    .bullet {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border-color: inherit;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid white;
+      margin-right: 16px;
+      justify-content: center;
+    }
+
+    .bullet-body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bullet-title {
+      font-size: 20px;
+      line-height: 30px;
+      color: #eeeeee;
+    }
+
+    .bullet-description {
+      font-size: 16px;
+      line-height: 24px;
+      color: #aeaeae;
+    }
   }
 }

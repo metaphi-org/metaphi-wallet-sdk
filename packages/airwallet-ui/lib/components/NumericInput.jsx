@@ -1,57 +1,66 @@
 import React from "react";
 
-const NumericInput = ({ label }) => {
+const NumericInput = ({ label, maxLength, onInputChange }) => {
+  // const [code, setCode] = useState([]);
+  let setCode;
+
+  const onChange = (e) => {
+    const index = e.target.id;
+    code[index] = e.target.value;
+    setCode(code);
+
+    // Focus on the next element
+    if (index < maxLength) e.target?.nextElementSibling?.focus();
+
+    // Reached max.
+    if (code.join("").length === maxLength) onInputChange(code.join(""));
+  };
+
   return (
     <div>
       <label>{label}</label>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
+      <div className="numeric-input-container">
         <input
           id="0"
           type="text"
           maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
+          className="rounded"
+          onChange={onChange}
         />
         <input
           id="1"
           type="text"
           maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
+          className="rounded"
+          onChange={onChange}
         />
         <input
           id="2"
           type="text"
           maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
+          className="rounded"
+          onChange={onChange}
         />
         <input
           id="3"
           type="text"
           maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
+          className="rounded"
+          onChange={onChange}
         />
         <input
           id="4"
           type="text"
           maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
+          className="rounded"
+          onChange={onChange}
         />
         <input
           id="5"
           type="text"
           maxLength="1"
-          style={roundedInputStyle}
-          onChange={this.handleVerificationCodeChange}
+          className="rounded"
+          onChange={onChange}
         />
       </div>
     </div>

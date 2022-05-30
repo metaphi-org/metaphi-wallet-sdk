@@ -1,7 +1,14 @@
 import React from "react";
 
-const SecondaryButton = () => {
-  return <div></div>;
+const SecondaryButton = ({ disabled, children, onClick }) => {
+  return (
+    <div
+      className={`btn btn--secondary ${disabled ? "disabled" : "active"}`}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
 };
 
 export default SecondaryButton;
