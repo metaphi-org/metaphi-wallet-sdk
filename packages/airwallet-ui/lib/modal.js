@@ -27,7 +27,7 @@ class MetaphiInputHandler extends React.Component {
     super(props);
     this.state = {
       show: true,
-      modalState: MetaphiInputHandler.INPUT_TYPES.USER_PIN,
+      modalState: MetaphiInputHandler.INPUT_TYPES.SUCCESS,
     };
     this._resolve = null;
 
@@ -68,9 +68,10 @@ class MetaphiInputHandler extends React.Component {
   };
 
   updateState = (state) => {
-    if (state === "processing") this.setState({ modalState: 3 });
+    if (state === "processing")
+      this.setState({ modalState: MetaphiInputHandler.INPUT_TYPES.PROCESSING });
     if (state === "success") {
-      this.setState({ modalState: 4 });
+      this.setState({ modalState: MetaphiInputHandler.INPUT_TYPES.SUCCESS });
 
       // hide modal.
       const self = this;
@@ -91,7 +92,7 @@ class MetaphiInputHandler extends React.Component {
       case MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGNING:
         return <TransactionSigningDialog resolve={this._resolve} />;
       case MetaphiInputHandler.INPUT_TYPES.SUCCESS:
-        return <SuccessDialog onClose={this.handleClose} />;
+        return <SuccessDialog dapp={"Pegaxy"} onClose={this.handleClose} />;
       case MetaphiInputHandler.INPUT_TYPES.PROCESSING:
         return <ProcessingDialog />;
       case MetaphiInputHandler.INPUT_TYPES.ERROR:

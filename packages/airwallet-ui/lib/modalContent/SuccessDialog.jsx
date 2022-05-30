@@ -11,12 +11,13 @@ const SuccessDialog = ({ address, dapp, onClose }) => {
     <div>
       {/** Lottie */}
       <div style={{ width: "144px", height: "144px" }}></div>
-      <div>
-        You have successfully cnnected your Metaphi Wallet ({address}) to
+      <div style={{ textAlign: "center", lineHeight: "1.5" }}>
+        You have successfully connected your Metaphi Wallet ({address}) to
+        <br />
         {dapp}
       </div>
       <div className="modal-cta-wrapper">
-        <PrimaryButton onClick={onClose}>Go to Pegaxy</PrimaryButton>
+        <PrimaryButton onClick={onClose}>Go to {dapp}</PrimaryButton>
         <SecondaryButton onClick={navigateToMetaphi}>
           View Metaphi Dashboard
         </SecondaryButton>

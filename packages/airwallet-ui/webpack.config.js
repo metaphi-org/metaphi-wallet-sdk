@@ -6,7 +6,7 @@ module.exports = {
   mode: "production",
   entry: "./lib/index.js",
   output: {
-    publicPath: "",
+    publicPath: "/",
     path: path.resolve(__dirname, "dist"),
     filename: "index.js",
     libraryTarget: "commonjs2",
@@ -30,16 +30,12 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
       },
       {
-        test: /\.(svg|png|jpg|gif)$/i,
-        use: [
-          {
-            loader: "url-loader",
-            options: {
-              limit: 12000,
-              name: "[hash]-[name].[ext]",
-            },
-          },
-        ],
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        loader: "url-loader",
+        options: {
+          limit: 8000, // Convert images < 8kb to base64 strings
+          name: "images/[name].[ext]",
+        },
       },
     ],
   },

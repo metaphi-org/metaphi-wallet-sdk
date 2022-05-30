@@ -1,21 +1,14 @@
 import React from "react";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 
-const ConnectionInitializationDialog = ({
-  walletAddress,
-  resolve,
-  onProcess,
-}) => {
-  let activeStep = 2;
-  // const [activeStep, setActiveStep] = useState();
-  // const [userPin, setUserPin] = useState();
+const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
+  const [activeStep, setActiveStep] = useState();
+  const [userPin, setUserPin] = useState();
 
   const handleUserPin = (e) => {
-    this.setState({ userPin: e.target.value });
+    setUserPin(e.target.value);
     if (e.target.value.length === 4) {
-      // resolve
-      resolve(e.target.value);
-      // this.updateState("processing");
+      setActiveStep(4);
     }
   };
 
@@ -67,6 +60,7 @@ const ConnectionInitializationDialog = ({
             <div className="bullet-title">Pin:</div>
             <div className="bullet-description">
               <input
+                onChange={handleUserPin}
                 type="text"
                 disabled={activeStep !== 3}
                 placeholder="Please enter your user pin"
@@ -87,7 +81,10 @@ const ConnectionInitializationDialog = ({
       </div>
 
       <div className="modal-cta-wrapper">
-        <PrimaryButton disabled={activeStep < 5} onClick={onProcess}>
+        <PrimaryButton
+          disabled={activeStep < 5}
+          onClick={() => resolve(userPin)}
+        >
           Connect Wallet
         </PrimaryButton>
       </div>
