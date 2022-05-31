@@ -45,9 +45,9 @@ const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
           <div className="bullet">1</div>
           <div className="bullet-body">
             <div className="bullet-title">Wallet Address</div>
-            <div className="bullet-description">
+            <div className={`bullet-description ${getBulletState(0) === 'active' ? 'bullet-description--loading' : ''}`}>
               {activeStep === 0 ? "Getting your wallet address..." : null}
-              {activeStep > 0 ? walletAddress : null}
+              {activeStep > 0 ? "Fetched address." : null}
             </div>
           </div>
         </div>
@@ -55,9 +55,9 @@ const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
           <div className="bullet">2</div>
           <div className="bullet-body">
             <div className="bullet-title">Local Share</div>
-            <div className="bullet-description">
-              {activeStep === 1 ? "Retriving local share..." : null}
-              {activeStep > 1 ? "Retrived local share" : null}
+            <div className={`bullet-description ${getBulletState(1) === 'active' ? 'bullet-description--loading' : ''}`}>
+              {activeStep === 1 ? "Retrieving local share..." : null}
+              {activeStep > 1 ? "Retrieved local share." : null}
             </div>
           </div>
         </div>
@@ -65,7 +65,7 @@ const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
           <div className="bullet">3</div>
           <div className="bullet-body">
             <div className="bullet-title">Metaphi Share</div>
-            <div className="bullet-description">
+            <div className={`bullet-description ${getBulletState(2) === 'active' ? 'bullet-description--loading' : ''}`}>
               {activeStep === 2 ? "Fetching Metaphi share..." : null}
               {activeStep > 2 ? "Fetched Metaphi share." : null}
             </div>
@@ -75,12 +75,12 @@ const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
           <div className="bullet">4</div>
           <div className="bullet-body">
             <div className="bullet-title">Pin:</div>
-            <div className="bullet-description">
+            <div className={`bullet-description ${getBulletState(3) === 'active' ? 'bullet-description--loading' : ''}`}>
               <input
                 onChange={handleUserPin}
                 type="text"
                 disabled={activeStep !== 3}
-                placeholder="Please enter your user pin"
+                placeholder="e.g 1234"
               />
             </div>
           </div>
@@ -89,7 +89,7 @@ const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
           <div className="bullet">5</div>
           <div className="bullet-body">
             <div className="bullet-title">Private Key Reconstruction</div>
-            <div className="bullet-description">
+            <div className={`bullet-description ${getBulletState(4) === 'active' ? 'bullet-description--loading' : ''}`}>
               {activeStep === 4 ? "Recontructing your private key..." : null}
               {activeStep > 4 ? "Private key reconstructed." : null}
             </div>

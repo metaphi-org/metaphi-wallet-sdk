@@ -28,7 +28,7 @@ const MetaphiModal = (props) => {
               <div className="branding">Metaphi</div>
             </div>
             {/** Modal Content */}
-            <div>{props.children}</div>
+            <div style={{ maxWidth: '100%' }}>{props.children}</div>
           </div>
         </div>
       </div>

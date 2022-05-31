@@ -19,10 +19,10 @@ const TransactionSigningDialog = (props) => {
   } 
 
   return (
-    <div>
+    <>
       <div className="modal-description">Signature Request</div>
       <div className="modal-section flex flex-row">
-        <div className="" style={{ wordWrap: 'break-word'}}>
+        <div className="" style={{ wordWrap: 'break-word', width: '70%' }}>
           <div className='modal-label'>Address:</div>
           <div className='modal-text'>{address}</div>
         </div>
@@ -45,7 +45,7 @@ const TransactionSigningDialog = (props) => {
         <SecondaryButton onClick={() => handleClick(false)}>Cancel</SecondaryButton>
         <PrimaryButton onClick={() => handleClick(true)}>Sign</PrimaryButton>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 // webpack.config.js
 const path = require("path");
+const webpack = require('webpack')
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const nodeExternals = require('webpack-node-externals');
@@ -14,7 +15,9 @@ module.exports = {
     filename: "index.js",
     libraryTarget: 'commonjs'
   },
-  plugins: [new CleanWebpackPlugin(), new MiniCssExtractPlugin()],
+  plugins: [new CleanWebpackPlugin(), new MiniCssExtractPlugin(), new webpack.ProvidePlugin({
+    "React": "react",
+ })],
   module: {
     rules: [
       {

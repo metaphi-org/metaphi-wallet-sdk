@@ -246,12 +246,25 @@ $accent-color: #9228e8;
     margin: 12px 0;
 
     &.modal-bullet--complete {
+      .bullet {
+        color: #27ae60;
+        border-color:  #27ae60;;
+      }
+
       .bullet-title {
         color: #27ae60;
       }
 
       .bullet-description {
         color: #27ae60;
+      }
+
+      .bullet-description--loading {
+        font-weight: bold;
+        display: inline-block;
+        font-size: 16px;
+        clip-path: inset(0 0.5ch 0 0);
+        animation: l 1s steps(4) infinite;
       }
     }
 

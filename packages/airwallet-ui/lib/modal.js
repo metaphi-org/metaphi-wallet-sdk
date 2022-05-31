@@ -61,8 +61,7 @@ class MetaphiWalletInteractionHandler extends React.Component {
 
   getUserPin = async () => {
     return this.getUserInput(
-      MetaphiWalletInteractionHandler.INPUT_TYPES.USER_PIN,
-    );
+      MetaphiWalletInteractionHandler.INPUT_TYPES.USER_PIN);
   };
 
   getUserSigningConfirmation = async (payload) => {
