@@ -1,7 +1,8 @@
 // webpack.config.js
 const path = require("path");
-const externalReact = require('webpack-external-react');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   mode: "production",
@@ -10,11 +11,10 @@ module.exports = {
     publicPath: "/",
     path: path.resolve(__dirname, "dist"),
     filename: "index.js",
-    libraryTarget: "commonjs2",
+    libraryTarget: "commonjs",
   },
-  plugins: [new MiniCssExtractPlugin()],
+  plugins: [new CleanWebpackPlugin(), new MiniCssExtractPlugin()],
   module: {
-    noParse: externalReact.noParse,
     rules: [
       {
         test: /\.(js|jsx)$/,
@@ -56,5 +56,4 @@ module.exports = {
   //   react: 'commonjs react', // Case matters here 
   //   'react-dom' : 'commonjs react-dom' // Case matters here 
   // },
-  externals: externalReact.externals,
 };
