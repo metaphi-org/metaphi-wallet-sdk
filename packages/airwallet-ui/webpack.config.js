@@ -8,10 +8,11 @@ module.exports = {
   mode: "production",
   entry: "./lib/index.js",
   output: {
+    globalObject: 'this',
     publicPath: "/",
     path: path.resolve(__dirname, "dist"),
     filename: "index.js",
-    libraryTarget: "commonjs",
+    libraryTarget: 'umd'
   },
   plugins: [new CleanWebpackPlugin(), new MiniCssExtractPlugin()],
   module: {
@@ -52,8 +53,14 @@ module.exports = {
       }
     ],
   },
-  // externals: {
-  //   react: 'commonjs react', // Case matters here 
-  //   'react-dom' : 'commonjs react-dom' // Case matters here 
-  // },
+  externals: {
+    react: {
+      commonjs: 'react',
+      commonjs2: 'react'
+    },
+    'react-dom': {
+      commonjs: 'react-dom',
+      commonjs2: 'react-dom'
+    }
+  },
 };

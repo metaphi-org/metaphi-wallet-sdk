@@ -1,66 +1,67 @@
-import {useState} from "react";
+import { useEffect, useState } from 'react';
 
-const NumericInput = ({ label, maxLength, onInputChange }) => {
-  const [code, setCode] = useState([]);
+const NumericInput = ({ label, maxLength = 6, onInputChange, disabled }) => {
+  const [code, setCode] = useState('');
+  // const placeholder = Array.from(Array(maxLength));
+  // const code = useRef([]);
 
-  const onChange = (e) => {
-    const index = e.target.id;
-    code[index] = e.target.value;
-    setCode(code);
+  // const handlKeyDown = useCallback(
+  //   (e) => {
+  //     const index = parseInt(e.target.id);
+  //     const newCode = [...code.current];
+  //     // Handle backspace
+  //     const key = e.keyCode;
+  //     if (key === 8) {
+  //       newCode[index] = '';
+  //       code.current = newCode;
+  //       console.log(e.target?.previousElementSibling);
+  //       e.target?.previousElementSibling?.focus();
+  //       console.log(code);
+  //       return;
+  //     }
+  //   },
+  //   [code],
+  // );
 
-    // Focus on the next element
-    if (index < maxLength) e.target?.nextElementSibling?.focus();
+  // const onChange = (e) => {
+  //   if (!e.target.value.length) return;
 
-    // Reached max.
-    if (code.join("").length === maxLength) onInputChange(code.join(""));
-  };
+  //   const newCode = [...code.current];
+  //   const index = parseInt(e.target.id);
+  //   const value = e.target.value[0];
+
+  //   newCode[index] = value;
+  //   code.current = newCode;
+  //   console.log('old code', code.current, 'new code', newCode, index);
+  //   // Focus on the next element
+  //   if (index < maxLength) e.target?.nextElementSibling?.focus();
+
+  //   // Reached max.
+  //   const textCode = code.current.join('');
+  //   if (textCode.length === maxLength) onInputChange(textCode);
+  //   console.log('Auth Code:', code, textCode.length === maxLength);
+  // };
 
   return (
     <div>
       <label>{label}</label>
       <div className="numeric-input-container">
         <input
-          id="0"
+          disabled={disabled}
           type="text"
-          maxLength="1"
-          className="rounded"
-          onChange={onChange}
+          onChange={(e) => onInputChange(e.target.value)}
         />
-        <input
-          id="1"
-          type="text"
-          maxLength="1"
-          className="rounded"
-          onChange={onChange}
-        />
-        <input
-          id="2"
-          type="text"
-          maxLength="1"
-          className="rounded"
-          onChange={onChange}
-        />
-        <input
-          id="3"
-          type="text"
-          maxLength="1"
-          className="rounded"
-          onChange={onChange}
-        />
-        <input
-          id="4"
-          type="text"
-          maxLength="1"
-          className="rounded"
-          onChange={onChange}
-        />
-        <input
-          id="5"
-          type="text"
-          maxLength="1"
-          className="rounded"
-          onChange={onChange}
-        />
+        {/* {placeholder.map((value, index) => (
+          <input
+            key={index}
+            id={index}
+            type="text"
+            maxLength="1"
+            className="rounded"
+            onKeyDown={handlKeyDown}
+            onChange={onChange}
+          />
+        ))} */}
       </div>
     </div>
   );

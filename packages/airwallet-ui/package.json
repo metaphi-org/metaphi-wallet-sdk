@@ -1,6 +1,6 @@
 {
   "name": "@metaphi/airwallet-ui",
-  "version": "0.0.10",
+  "version": "0.0.13",
   "description": "> TODO: description",
   "author": "Akshata <akshatamohanty@gmail.com>",
   "homepage": "https://github.com/metaphi-org/metaphi-api#readme",
@@ -33,6 +33,7 @@
     "react-dom": "^18.1.0"
   },
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.18.2",
     "@babel/preset-env": "^7.18.2",
     "@babel/preset-react": "^7.17.12",
     "babel-cli": "^6.26.0",
@@ -61,6 +62,7 @@
     "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
-    "lottie-web": "^5.9.4"
+    "lottie-web": "^5.9.4",
+    "react-lottie": "^1.2.3"
   }
 }

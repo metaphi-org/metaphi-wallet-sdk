@@ -1,23 +1,19 @@
-import { useEffect } from "react";
-import lottie from 'lottie-web';
+import { useEffect } from 'react';
+import LottieGraphic from '../components/LottieGraphic.jsx';
 import animationData from '../assets/lottie/error.json';
 
-const ErrorDialog = () => {  
-  useEffect(() => {
-    const heroAnimation = lottie.loadAnimation({
-      container: document.getElementById('error-animation'),
-      renderer: 'svg',
-      animationData
-    });
-    
-    heroAnimation.goToAndPlay(0, true);
-  }, [])
-
+const ErrorDialog = ({ message }) => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-      {/** Lottie */}
-      <div id='error-animation' style={{ width: "144px", height: "144px" }}></div>
-      <div className="modal-cta-wrapper loading">Connecting ...</div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <LottieGraphic animationData={animationData} />
+      <div className="modal-cta-wrapper">{message}</div>
     </div>
   );
 };

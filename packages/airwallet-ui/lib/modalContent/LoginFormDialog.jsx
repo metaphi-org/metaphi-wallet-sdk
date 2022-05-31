@@ -1,8 +1,8 @@
-import  { useState } from "react";
-import TextButton from "../components/TextButton.jsx";
-import PrimaryButton from "../components/PrimaryButton.jsx";
-import Input from "../components/Input.jsx";
-import NumericInput from "../components/NumericInput.jsx";
+import { useState } from 'react';
+import TextButton from '../components/TextButton.jsx';
+import PrimaryButton from '../components/PrimaryButton.jsx';
+import Input from '../components/Input.jsx';
+import NumericInput from '../components/NumericInput.jsx';
 
 const MetaphiInfoLink = () => {
   return (
@@ -19,16 +19,24 @@ const MetaphiInfoLink = () => {
 
 /**
  * Modal to get user input for email or verification code.
- * 
- * @param {mode} emailOrVerificationMode: 0 or 1 
- * @param {resolve} promise 
- * @returns 
+ *
+ * @param {mode} emailOrVerificationMode: 0 or 1
+ * @param {resolve} promise
+ * @returns
  */
 const LoginFormDialog = ({ mode, resolve }) => {
-  const [value, setValue] = useState("");
-  const [codeSent, setCodeSent] = useState(false)
+  const [value, setValue] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const text = codeSent ? "Didn\'t get a code? Resend Code" : "Send Authorization Code"
+  const text = codeSent
+    ? 'Please check your email.'
+    : 'Send Authorization Code';
+
+  const handleContinue = () => {
+    setIsLoading(true);
+    resolve(value);
+  };
 
   return (
     <div>
@@ -40,27 +48,38 @@ const LoginFormDialog = ({ mode, resolve }) => {
       {/** Email */}
       <div className="modal-section">
         <Input label="Email Address" onChange={setValue} />
-        <TextButton text={text} onClick={() => {
-          setCodeSent(true)
-          resolve(value)
-        }} />
+        <TextButton
+          text={text}
+          disabled={codeSent}
+          onClick={() => {
+            if (codeSent) return;
+
+            setCodeSent(true);
+            resolve(value);
+          }}
+        />
       </div>
 
       {/** Authentication */}
       <div
         className={`modal-section modal-section--${
-          mode === 1 ? "active" : "disabled"
+          mode === 1 ? 'active' : 'disabled'
         }`}
       >
-        <NumericInput label="Authentication Code" onInputChange={setValue} />
+        <NumericInput
+          disabled={mode === 0 || isLoading}
+          label="Authentication Code"
+          onInputChange={setValue}
+        />
       </div>
 
       {/** CTA */}
       <div className="modal-cta-wrapper">
         {/** Continue */}
         <PrimaryButton
-          disabled={mode === 0 || value?.length < 6}
-          onClick={() => resolve(value)}
+          loading={isLoading}
+          disabled={mode === 0 || value?.length < 6 || isLoading}
+          onClick={handleContinue}
         >
           Continue
         </PrimaryButton>

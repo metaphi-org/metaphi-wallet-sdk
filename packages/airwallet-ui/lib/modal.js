@@ -1,20 +1,20 @@
-import React from "react";
+import React from 'react';
 // Components.
-import MetaphiModal from "./MetaphiModal.jsx";
-import LoginFormDialog from "./modalContent/LoginFormDialog.jsx";
-import ConnectionInitializationDialog from "./modalContent/ConnectionInitializationDialog.jsx";
-import TransactionSigningDialog from "./modalContent/TransactionSigningDialog.jsx";
-import ProcessingDialog from "./modalContent/ProcessingDialog.jsx";
-import SuccessDialog from "./modalContent/SuccessDialog.jsx";
-import ErrorDialog from "./modalContent/ErrorDialog.jsx";
-import ConnectDialog from "./modalContent/ConnectDialog.jsx";
+import MetaphiModal from './MetaphiModal.jsx';
+import LoginFormDialog from './modalContent/LoginFormDialog.jsx';
+import ConnectionInitializationDialog from './modalContent/ConnectionInitializationDialog.jsx';
+import TransactionSigningDialog from './modalContent/TransactionSigningDialog.jsx';
+import ProcessingDialog from './modalContent/ProcessingDialog.jsx';
+import SuccessDialog from './modalContent/SuccessDialog.jsx';
+import ErrorDialog from './modalContent/ErrorDialog.jsx';
+import ConnectDialog from './modalContent/ConnectDialog.jsx';
 // Styles.
-import "./styles/index.scss";
+// import "./styles/index.scss";
 
 /**
  * Handles all inputs from the user.
  */
-class MetaphiInputHandler extends React.Component {
+class MetaphiWalletInteractionHandler extends React.Component {
   static INPUT_TYPES = {
     EMAIL: 0,
     VERIFICATION_CODE: 1,
@@ -31,7 +31,7 @@ class MetaphiInputHandler extends React.Component {
     this.state = {
       show: false,
       modalState: null,
-      modalProps: {}
+      modalProps: {},
     };
     this._resolve = null;
 
@@ -50,30 +50,39 @@ class MetaphiInputHandler extends React.Component {
 
   /** Convenience functions. */
   getEmail = async () => {
-    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.EMAIL);
+    return this.getUserInput(MetaphiWalletInteractionHandler.INPUT_TYPES.EMAIL);
   };
 
   getVerificationCode = async () => {
-    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.VERIFICATION_CODE);
+    return this.getUserInput(
+      MetaphiWalletInteractionHandler.INPUT_TYPES.VERIFICATION_CODE,
+    );
   };
 
   getUserPin = async () => {
-    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.USER_PIN);
+    return this.getUserInput(
+      MetaphiWalletInteractionHandler.INPUT_TYPES.USER_PIN,
+    );
   };
 
   getUserSigningConfirmation = async (payload) => {
-    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGN, payload);
-  }
-
+    return this.getUserInput(
+      MetaphiWalletInteractionHandler.INPUT_TYPES.TRANSACTION_SIGN,
+      payload,
+    );
+  };
 
   getUserTransactionConfirmation = async (payload) => {
-    return this.getUserInput(MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGN, payload);
-  }
+    return this.getUserInput(
+      MetaphiWalletInteractionHandler.INPUT_TYPES.TRANSACTION_SIGN,
+      payload,
+    );
+  };
 
   /** Internal functions. */
   getUserInput = async (inputType, payload) => {
     if (inputType === undefined) {
-      throw new Error('Invalid Input Requested.')
+      throw new Error('Invalid Input Requested.');
     }
 
     // Setup modal state.
@@ -88,43 +97,62 @@ class MetaphiInputHandler extends React.Component {
   };
 
   updateState = (state, modalProps) => {
-    if (state === "processing")
-      this.setState({ modalState: MetaphiInputHandler.INPUT_TYPES.PROCESSING });
-    if (state === "success") {
-      this.setState({ modalState: MetaphiInputHandler.INPUT_TYPES.SUCCESS, modalProps });
-
-      // hide modal.
-      const self = this;
-      setTimeout(() => {
-        self.setState({ show: false });
-      }, 1000);
+    if (state === 'processing')
+      this.setState({
+        modalState: MetaphiWalletInteractionHandler.INPUT_TYPES.PROCESSING,
+      });
+    if (state === 'success') {
+      this.setState({
+        modalState: MetaphiWalletInteractionHandler.INPUT_TYPES.SUCCESS,
+        modalProps,
+      });
     }
   };
 
+  showError = (error, inputType) => {
+    this.setState({
+      show: true,
+      modalState: MetaphiWalletInteractionHandler.INPUT_TYPES.ERROR,
+      modalProps: { message: error.message },
+    });
+  };
+
   renderState = (modalState) => {
-    const dialogProps = this.state.modalProps
+    const dialogProps = this.state.modalProps;
 
     switch (modalState) {
-      case MetaphiInputHandler.INPUT_TYPES.EMAIL:
+      case MetaphiWalletInteractionHandler.INPUT_TYPES.EMAIL:
         return <LoginFormDialog mode={0} resolve={this._resolve} />;
-      case MetaphiInputHandler.INPUT_TYPES.VERIFICATION_CODE:
+      case MetaphiWalletInteractionHandler.INPUT_TYPES.VERIFICATION_CODE:
         return <LoginFormDialog mode={1} resolve={this._resolve} />;
-      case MetaphiInputHandler.INPUT_TYPES.USER_PIN:
-        return  <ConnectionInitializationDialog resolve={this._resolve} {...dialogProps} />;
-      case MetaphiInputHandler.INPUT_TYPES.TRANSACTION_SIGN:
-        return <TransactionSigningDialog resolve={this._resolve} {...dialogProps} onClose={this.handleClose}/>;
-      case MetaphiInputHandler.INPUT_TYPES.SUCCESS:
+      case MetaphiWalletInteractionHandler.INPUT_TYPES.USER_PIN:
+        return (
+          <ConnectionInitializationDialog
+            resolve={this._resolve}
+            {...dialogProps}
+          />
+        );
+      case MetaphiWalletInteractionHandler.INPUT_TYPES.TRANSACTION_SIGN:
+        return (
+          <TransactionSigningDialog
+            resolve={this._resolve}
+            {...dialogProps}
+            onClose={this.handleClose}
+          />
+        );
+      case MetaphiWalletInteractionHandler.INPUT_TYPES.SUCCESS:
         return <SuccessDialog {...dialogProps} onClose={this.handleClose} />;
-      case MetaphiInputHandler.INPUT_TYPES.PROCESSING:
+      case MetaphiWalletInteractionHandler.INPUT_TYPES.PROCESSING:
         return <ProcessingDialog />;
-      case MetaphiInputHandler.INPUT_TYPES.ERROR:
-        return <ErrorDialog />;
+      case MetaphiWalletInteractionHandler.INPUT_TYPES.ERROR:
+        return <ErrorDialog {...dialogProps} onClose={this.handleClose} />;
       default:
         break;
     }
   };
 
   render() {
+    if (!global.window) return null;
     if (!this.state.show) return null;
 
     return (
@@ -135,4 +163,4 @@ class MetaphiInputHandler extends React.Component {
   }
 }
 
-export default MetaphiInputHandler;
+export default MetaphiWalletInteractionHandler;

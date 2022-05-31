@@ -1,9 +1,11 @@
-import React from "react";
+import React from 'react';
 
-const PrimaryButton = ({ children, disabled, onClick }) => {
+const PrimaryButton = ({ children, disabled, loading, onClick }) => {
   return (
     <div
-      className={`btn btn--primary ${disabled ? "disabled" : "active"}`}
+      className={`btn btn--primary ${
+        disabled ? 'btn--disabled disabled' : 'active'
+      }`}
       onClick={onClick}
     >
       {children}

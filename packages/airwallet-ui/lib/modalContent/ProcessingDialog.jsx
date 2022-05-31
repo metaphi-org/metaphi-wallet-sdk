@@ -1,22 +1,19 @@
-import { useEffect } from "react";
-import lottie from 'lottie-web';
-import animationData from '../assets/lottie/processing.json';
+import { useEffect } from 'react';
+import LottieGraphic from '../components/LottieGraphic.jsx';
+import animationData from '../assets/lottie/loading.json';
 
 const ProcessingDialog = () => {
-  useEffect(() => {
-    const heroAnimation = lottie.loadAnimation({
-      container: document.getElementById('processing-animation'),
-      renderer: 'svg',
-      animationData
-    });
-    
-    heroAnimation.goToAndPlay(0, true);
-  }, [])
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
       {/** Lottie */}
-      <div id='processing-animation' style={{ width: "144px", height: "144px" }}></div>
+      <LottieGraphic animationData={animationData} />
       <div className="modal-cta-wrapper loading">Connecting ...</div>
     </div>
   );

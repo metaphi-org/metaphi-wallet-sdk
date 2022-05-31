@@ -2,14 +2,16 @@ import React from "react";
 import SecondaryButton from "../components/SecondaryButton.jsx";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 
-const TransactionSigningDialog = ({
-  resolve,
-  address,
-  balance,
-  origin,
-  message,
-  onClose
-}) => {
+const TransactionSigningDialog = (props) => {
+  console.log(props)
+ const {
+    resolve,
+    address,
+    balance,
+    origin,
+    message,
+    onClose
+  } = props
 
   const handleClick = (value) => {
     if (typeof resolve === 'function') resolve(value)
@@ -20,18 +22,18 @@ const TransactionSigningDialog = ({
     <div>
       <div className="modal-description">Signature Request</div>
       <div className="modal-section flex flex-row">
-        <div className="half-container">
+        <div className="" style={{ wordWrap: 'break-word'}}>
           <div className='modal-label'>Address:</div>
           <div className='modal-text'>{address}</div>
         </div>
-        <div className="half-container">
+        {/* <div className="half-container">
           <div className='modal-label'>Balance:</div>
           <div className='modal-text'>{balance} WEI</div>
-        </div>
+        </div> */}
       </div>
       <div className="modal-section">
         <div  className='modal-label'>Origin:</div>
-        <div className='modal-text'>{origin}</div>
+        <div className='modal-text'>{window.location.hostname}</div>
       </div>
       <div className="modal-section">
         <div className="message-box">

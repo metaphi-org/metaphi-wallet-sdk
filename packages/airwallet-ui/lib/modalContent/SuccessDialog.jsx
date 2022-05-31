@@ -1,35 +1,31 @@
-import { useEffect } from "react";
-import lottie from 'lottie-web';
-import PrimaryButton from "../components/PrimaryButton.jsx";
-import SecondaryButton from "../components/SecondaryButton.jsx";
+import { useEffect } from 'react';
+import PrimaryButton from '../components/PrimaryButton.jsx';
+import SecondaryButton from '../components/SecondaryButton.jsx';
+import LottieGraphic from '../components/LottieGraphic.jsx';
 import animationData from '../assets/lottie/success.json';
 
-const SuccessDialog = ({ address, dapp, onClose }) => {
+const SuccessDialog = ({ address, dApp, onClose }) => {
   const navigateToMetaphi = () => {
-    window.open("https:/metaphi.xyz");
+    window.open('https:/metaphi.xyz');
   };
 
-  useEffect(() => {
-    const heroAnimation = lottie.loadAnimation({
-      container: document.getElementById('wallet-connected-animation'),
-      renderer: 'svg',
-      animationData
-    });
-    
-    heroAnimation.goToAndPlay(0, true);
-  }, [])
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-      {/** Lottie */}
-      <div id='wallet-connected-animation' style={{ width: "144px", height: "144px" }}></div>
-      <div style={{ textAlign: "center", lineHeight: "1.5" }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <LottieGraphic animationData={animationData} />
+      <div style={{ textAlign: 'center', lineHeight: '1.5' }}>
         You have successfully connected your Metaphi Wallet ({address}) to
         <br />
-        {dapp}
+        {dApp}
       </div>
       <div className="modal-cta-wrapper">
-        <PrimaryButton onClick={onClose}>Go to {dapp}</PrimaryButton>
+        <PrimaryButton onClick={onClose}>Go to {dApp}</PrimaryButton>
         <SecondaryButton onClick={navigateToMetaphi}>
           View Metaphi Dashboard
         </SecondaryButton>

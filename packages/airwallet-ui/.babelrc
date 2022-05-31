@@ -3,5 +3,5 @@
     "@babel/preset-env",
     ["@babel/preset-react", { "runtime": "automatic" }]
   ],
-  "plugins": ["transform-object-rest-spread", "transform-react-jsx"]
+  "plugins": ["transform-object-rest-spread", "transform-react-jsx", "@babel/plugin-transform-modules-commonjs"]
 }

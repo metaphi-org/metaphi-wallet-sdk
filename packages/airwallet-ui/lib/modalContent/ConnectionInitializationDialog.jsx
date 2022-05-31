@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import PrimaryButton from "../components/PrimaryButton.jsx";
 
-const MAX_PIN_LENGTH = 6
+const MAX_PIN_LENGTH = 4
 
 const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [userPin, setUserPin] = useState();
-  const [timer, setTimer]  = useState()
+  const [timer, setTimer]  = useState(0)
 
   const isActive = activeStep < 5
   useEffect(() => {
@@ -14,7 +14,7 @@ const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
 
     if (isActive) {
       interval = setInterval(() => {
-        if (timer % 5 === 0 && activeStep != 3) setActiveStep(activeStep + 1)
+        if (timer % 2 === 0 && activeStep != 3) setActiveStep(activeStep + 1)
         setTimer(timer => timer + 1);
       }, 1000);
     } 
