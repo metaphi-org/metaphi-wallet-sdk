@@ -12,7 +12,7 @@ module.exports = {
     publicPath: "/",
     path: path.resolve(__dirname, "dist"),
     filename: "index.js",
-    libraryTarget: 'umd'
+    libraryTarget: 'commonjs'
   },
   plugins: [new CleanWebpackPlugin(), new MiniCssExtractPlugin()],
   module: {
@@ -36,7 +36,7 @@ module.exports = {
         test: /\.(jpe?g|png|gif|svg)$/i,
         loader: "url-loader",
         options: {
-          limit: 80000, // Convert images < 8kb to base64 strings
+          limit: 8000, // Convert images < 8kb to base64 strings
           name: "public/[name].[ext]",
         },
       },
