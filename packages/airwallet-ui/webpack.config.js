@@ -51,7 +51,8 @@ module.exports = {
     ],
   },
   externals: {
-    'react': 'react', // Case matters here 
+
+    react: 'commonjs-module react', // Case matters here 
     'react-dom' : 'reactDOM' // Case matters here 
   },
 };
