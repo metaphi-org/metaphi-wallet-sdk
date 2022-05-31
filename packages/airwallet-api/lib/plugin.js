@@ -1,5 +1,5 @@
-const Web3 = require("web3");
-const WALLET_EMBED_ID = "mWalletPlugin";
+const Web3 = require('web3');
+const WALLET_EMBED_ID = 'mWalletPlugin';
 
 // Source: https://stackoverflow.com/a/2117523/3545099
 function uuidv4() {
@@ -7,7 +7,7 @@ function uuidv4() {
     (
       c ^
       (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-    ).toString(16)
+    ).toString(16),
   );
 }
 
@@ -17,45 +17,46 @@ class WalletPlugin {
   _isLoaded = false;
   _wallet = {};
   _provider = null;
-  _userInputMethod = null;
+  _walletUI = null;
 
   constructor(options) {
     this._options = options;
     this._accountConfig = options.accountConfig;
     this._networkConfig = options.networkConfig;
-    this._SOURCE_URL = "https://metaphi.xyz";
+    this._SOURCE_URL = 'https://metaphi.xyz';
     this._provider = new Web3(
-      new Web3.providers.HttpProvider(options.networkConfig.rpcUrl)
+      new Web3.providers.HttpProvider(options.networkConfig.rpcUrl),
     );
 
-    console.log("Wallet Options", options);
     if (options.custom.userInputMethod) {
-      this._userInputMethod = options.custom.userInputMethod;
+      this._walletUI = options.custom.userInputMethod;
     }
+
+    console.log('Metaphi wallet initialized.', options);
   }
 
   /** Public Functions */
   // Client-side only.
   init = () => {
     if (!global.window) {
-      throw new Error("Metaphi Wallet should be initialized client-side.");
+      throw new Error('Metaphi Wallet should be initialized client-side.');
     }
 
     const embed = document.getElementById(WALLET_EMBED_ID);
-    const root = document.getElementById("mWalletContainer");
+    const root = document.getElementById('mWalletContainer');
     if (!embed) {
       // Setup iframe.
-      const ifrm = document.createElement("iframe");
-      ifrm.setAttribute("id", WALLET_EMBED_ID);
+      const ifrm = document.createElement('iframe');
+      ifrm.setAttribute('id', WALLET_EMBED_ID);
       const source = this._getSource();
-      ifrm.setAttribute("src", source);
-      ifrm.setAttribute("height", 0);
-      ifrm.setAttribute("width", 0);
-      ifrm.setAttribute("style", "position: absolute; top: 0; left: 0;");
+      ifrm.setAttribute('src', source);
+      ifrm.setAttribute('height', 0);
+      ifrm.setAttribute('width', 0);
+      ifrm.setAttribute('style', 'position: absolute; top: 0; left: 0;');
       root.appendChild(ifrm); // to place at end of document
 
       // Setup listener, for callbacks.
-      window.addEventListener("message", this._receiveMessage);
+      window.addEventListener('message', this._receiveMessage);
 
       this._isLoaded = true;
     }
@@ -65,7 +66,7 @@ class WalletPlugin {
   destroy = () => {
     // Remove iframe.
     // Remove listeners.
-    window.removeEventListener("message", this._receiveMessage);
+    window.removeEventListener('message', this._receiveMessage);
     this._isLoaded = false;
   };
 
@@ -84,7 +85,7 @@ class WalletPlugin {
    */
   connect = (callback) => {
     // Add callback.
-    this._getCallbackStore()["on_connect"].push(callback);
+    this._getCallbackStore()['on_connect'].push(callback);
 
     this._login(callback);
   };
@@ -95,9 +96,9 @@ class WalletPlugin {
    */
   disconnect = (callback) => {
     // Add callback.
-    this._getCallbackStore()["on_disconnect"].push(callback);
+    this._getCallbackStore()['on_disconnect'].push(callback);
 
-    this._sendEvent({ event: "disconnect" }, callback);
+    this._sendEvent({ event: 'disconnect' }, callback);
   };
 
   /**
@@ -106,12 +107,13 @@ class WalletPlugin {
    * @param {function} callback
    */
   signMessage = async (payload, callback) => {
-    const ok = await this.getUserInput("signMessage", payload);
+    const tx = { ...payload, address: this._wallet.address };
+    const ok = await this.getUserInput('signMessage', tx);
     if (!ok) {
-      if (callback) callback({ err: "User didnot authorize signing." });
+      if (callback) callback({ err: 'User didnot authorize signing.' });
     }
 
-    this._sendEvent({ event: "signMessage", payload }, callback);
+    this._sendEvent({ event: 'signMessage', payload }, callback);
   };
 
   /**
@@ -120,12 +122,13 @@ class WalletPlugin {
    * @param {Function} callback
    */
   signTransaction = async (payload, callback) => {
-    const ok = await this.getUserInput("signTransaction", payload);
+    const tx = { ...payload, address: this._wallet.address };
+    const ok = await this.getUserInput('signTransaction', tx);
     if (!ok) {
-      if (callback) callback({ err: "User didnot authorize signing." });
+      if (callback) callback({ err: 'User didnot authorize signing.' });
     }
 
-    this._sendEvent({ event: "signTransaction", payload }, callback);
+    this._sendEvent({ event: 'signTransaction', payload }, callback);
   };
 
   /**
@@ -151,49 +154,60 @@ class WalletPlugin {
    * @param {*} callback
    */
   getUserInput = async (inputType, payload = {}) => {
-    // TODO: Add backup for when user input is not available
-    if (!this._userInputMethod) {
+    if (!this._walletUI) {
       return await this.getUserInputDefault(inputType);
     }
 
     let value;
     switch (inputType.toLowerCase()) {
-      case "email":
-        value = await this._userInputMethod.getEmail(payload);
+      case 'email':
+        value = await this._walletUI.getEmail(payload);
         break;
-      case "verificationcode":
-        value = await this._userInputMethod.getVerificationCode(payload);
+      case 'verificationcode':
+        value = await this._walletUI.getVerificationCode(payload);
         break;
-      case "pin":
-        value = await this._userInputMethod.getUserPin(payload);
+      case 'pin':
+        value = await this._walletUI.getUserPin(payload);
         break;
-      case "signmessage":
-        value = await this._userInputMethod.getUserSigningConfirmation(payload);
+      case 'signmessage':
+        value = await this._walletUI.getUserSigningConfirmation(payload);
         break;
-      case "signtransaction":
-        value = await this._userInputMethod.getUserTransactionConfirmation(payload);
+      case 'signtransaction':
+        value = await this._walletUI.getUserTransactionConfirmation(payload);
         break;
     }
     return value;
   };
 
+  showUserError = (error, inputType) => {
+    if (!this._walletUI) {
+      this.showUserErrorDefault(error);
+    } else {
+      this._walletUI.showError(error, inputType);
+    }
+  };
+
+  showUserErrorDefault = (error) => {
+    alert(error.message);
+  };
+
   getUserInputDefault = (inputType) => {
     let value;
     switch (inputType.toLowerCase()) {
-      case "email":
-        value = prompt("Please enter your email.");
+      case 'email':
+        value = prompt('Please enter your email.');
         break;
-      case "verificationcode":
-        value = prompt("Please enter authorization code send to your email.");
+      case 'verificationcode':
+        value = prompt('Please enter authorization code send to your email.');
         break;
-      case "pin":
-        value = prompt("Please enter your 6-digit pin.");
+      case 'pin':
+        value = prompt('Please enter your 6-digit pin.');
         break;
-      case "signmessage":
-        value = confirm("Sign this message?");
+      case 'signmessage':
+        value = confirm('Sign this message?');
         break;
-      case "signtransaction":
-        value = confirm("Sign this transaction?");
+      case 'signtransaction':
+        value = confirm('Sign this transaction?');
         break;
     }
     return value;
@@ -201,7 +215,7 @@ class WalletPlugin {
 
   // Internal. Only exposed, for testing.
   createWallet = (callback) => {
-    this._sendEvent({ event: "createWallet" }, callback);
+    this._sendEvent({ event: 'createWallet' }, callback);
   };
 
   /** Private Instances */
@@ -210,7 +224,7 @@ class WalletPlugin {
   };
 
   _initCallbackStore = () => {
-    window["__METAPHI__"] = {
+    window['__METAPHI__'] = {
       callbacks: {
         _METAPHI_INTERNAL_CALLBACK_: this._handleInternalCallback,
         // events
@@ -223,10 +237,10 @@ class WalletPlugin {
   };
 
   _getCallbackStore = () => {
-    if (!window["__METAPHI__"]) {
+    if (!window['__METAPHI__']) {
       this._initCallbackStore();
     }
-    return window["__METAPHI__"].callbacks;
+    return window['__METAPHI__'].callbacks;
   };
 
   // Get callback Id.
@@ -241,29 +255,29 @@ class WalletPlugin {
 
   _handleInternalCallback = (payload) => {
     const { method, data } = payload;
-    if (method === "wallet_connected") {
+    if (method === 'wallet_connected') {
       this._wallet.address = data.address;
     }
 
-    if (method === "wallet_disconnected") {
+    if (method === 'wallet_disconnected') {
       this._wallet = {};
     }
   };
 
   // Event
   _login = async () => {
-    const email = await this.getUserInput("email");
+    const email = await this.getUserInput('email');
     if (!email) return;
 
     // Login event.
     const payload = { email };
-    this._sendEvent({ event: "login", payload });
+    this._sendEvent({ event: 'login', payload });
   };
 
   // Event listener
   _handleLogin = (payload) => {
     if (payload.err) {
-      alert(`Error: ${payload.err}`);
+      console.log(`Error: ${payload.err}`);
       return;
     }
 
@@ -278,23 +292,28 @@ class WalletPlugin {
 
   // Event
   _verify = async (email) => {
-    const verificationCode = await this.getUserInput("verificationCode");
+    const verificationCode = await this.getUserInput('verificationCode');
     const payload = {
       email,
       verificationCode,
     };
-    this._sendEvent({ event: "verify", payload });
+    this._sendEvent({ event: 'verify', payload });
   };
 
   // Listener
   _handleVerify = (payload) => {
     if (payload.err) {
-      alert(`Error: ${payload.err}`);
+      this.showUserError({ message: payload.err }, 'verificationcode');
       return;
     }
 
     if (!payload.verified) {
-      alert("Incorrect verification code.");
+      this.showUserError(
+        {
+          message: 'Incorrect verification code.',
+        },
+        'verificationcode',
+      );
       return;
     }
 
@@ -306,17 +325,24 @@ class WalletPlugin {
 
   // Event.
   _connect = async (email) => {
-    const userPin = await this.getUserInput("Pin");
+    const userPin = await this.getUserInput('Pin');
     const payload = { email, userPin };
-    this._sendEvent({ event: "connect", payload });
-    this._userInputMethod.updateState("processing");
-
+    this._sendEvent({ event: 'connect', payload });
+    this._walletUI.updateState('processing');
   };
 
   // Listener.
   _handleConnect = (payload) => {
+    console.log('payload connect', payload);
     this._wallet.address = payload.address;
-    this._userInputMethod.updateState("success", { address: payload.address });
+    if (payload.connected) {
+      this._walletUI.updateState('success', {
+        address: payload.address,
+        dApp: this._accountConfig.dApp,
+      });
+    } else {
+      this.showUserError({ message: 'Error connecting wallet.' });
+    }
   };
 
   _handleDisconnect = () => {
@@ -330,7 +356,7 @@ class WalletPlugin {
     }
 
     const callbackFn = this._getCallbackStore()[callbackId];
-    if (typeof callbackFn === "function") callbackFn(payload);
+    if (typeof callbackFn === 'function') callbackFn(payload);
     else if (Array.isArray(callbackFn)) {
       callbackFn.forEach((fn) => {
         fn(payload);
@@ -340,7 +366,7 @@ class WalletPlugin {
     }
 
     // Delete non-internal callbacks.
-    const isInternalCallback = callbackId === "_METAPHI_INTERNAL_CALLBACK_";
+    const isInternalCallback = callbackId === '_METAPHI_INTERNAL_CALLBACK_';
     if (!isInternalCallback && !Array.isArray(callbackFn))
       delete this._getCallbackStore()[callbackId];
   };
@@ -379,10 +405,9 @@ class WalletPlugin {
   };
 }
 
-
 if (global.window) {
   global.window.WalletPlugin = WalletPlugin;
-  console.log("Metaphi is loaded.", !!global.window.WalletPlugin);
+  console.log('Metaphi is loaded.', !!global.window.WalletPlugin);
 }
 
 export default WalletPlugin;
