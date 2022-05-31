@@ -1,5 +1,6 @@
 // webpack.config.js
 const path = require("path");
+const externalReact = require('webpack-external-react');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
@@ -13,6 +14,7 @@ module.exports = {
   },
   plugins: [new MiniCssExtractPlugin()],
   module: {
+    noParse: externalReact.noParse,
     rules: [
       {
         test: /\.(js|jsx)$/,
@@ -50,8 +52,9 @@ module.exports = {
       }
     ],
   },
-  externals: {
-    react: 'commonjs react', // Case matters here 
-    'react-dom' : 'commonjs react-dom' // Case matters here 
-  },
+  // externals: {
+  //   react: 'commonjs react', // Case matters here 
+  //   'react-dom' : 'commonjs react-dom' // Case matters here 
+  // },
+  externals: externalReact.externals,
 };
