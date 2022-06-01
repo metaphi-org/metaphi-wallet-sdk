@@ -3,7 +3,9 @@
   "compilerOptions": {
     "module": "CommonJS",
     "declaration": true,
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
+    "noEmit": false,
+    "outDir": "dist",
   },
   "exclude": ["**/*.spec.ts"]
 }
