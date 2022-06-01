@@ -1,4 +1,3 @@
-"use strict";
 /* tslint:disable */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -9,11 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MetaphiConnector = void 0;
-const types_1 = require("@web3-react/types");
-const airwallet_api_1 = require("@metaphi/airwallet-api");
-class MetaphiConnector extends types_1.Connector {
+import { Connector } from '@web3-react/types';
+import { WalletPlugin } from '@metaphi/airwallet-api';
+class MetaphiConnector extends Connector {
     /**
      * @param connectEagerly - A flag indicating whether connection should be initiated when the class is constructed.
      * @param options - Options to pass to `@metamask/detect-provider`
@@ -33,7 +30,7 @@ class MetaphiConnector extends types_1.Connector {
                 return Promise.reject(false);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const opts = Object.assign(Object.assign({}, this.options), { custom: { userInputMethod: window.MetaphiModal } });
-            this.mWalletInstance = new airwallet_api_1.WalletPlugin(opts);
+            this.mWalletInstance = new WalletPlugin(opts);
             if (this.mWalletInstance === undefined)
                 return Promise.reject(false);
             this.mWalletInstance.init();
@@ -105,4 +102,4 @@ class MetaphiConnector extends types_1.Connector {
         this.options = undefined;
     }
 }
-exports.MetaphiConnector = MetaphiConnector;
+export { MetaphiConnector };

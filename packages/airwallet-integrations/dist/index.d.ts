@@ -43,7 +43,7 @@ declare global {
     }
 }
 declare module "@metaphi/airwallet-api";
-export declare class MetaphiConnector extends Connector {
+declare class MetaphiConnector extends Connector {
     /** {@inheritdoc Connector.provider} */
     provider: MetaphiProvider | undefined;
     private options;
@@ -68,4 +68,4 @@ export declare class MetaphiConnector extends Connector {
     activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter): Promise<void>;
     deactivate(...args: unknown[]): Promise<void> | void;
 }
-export {};
+export { MetaphiConnector };

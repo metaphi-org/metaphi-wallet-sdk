@@ -50,10 +50,9 @@ declare global {
 }
 
 declare module "@metaphi/airwallet-api";
-
-export class MetaphiConnector extends Connector {
+class MetaphiConnector extends Connector {
   /** {@inheritdoc Connector.provider} */
-  public provider: MetaphiProvider | undefined
+  declare public provider: MetaphiProvider | undefined
 
   private options: MetaphiConfigOptions | undefined
   private mWalletInstance: MetaphiWallet | undefined; 
@@ -153,3 +152,5 @@ export class MetaphiConnector extends Connector {
     this.options = undefined
   }
 }
+
+export { MetaphiConnector }
