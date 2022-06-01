@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/recommended/tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
+    "target": "es6",
     "declaration": true,
     "moduleResolution": "Node",
     "noEmit": false,
