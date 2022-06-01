@@ -1,0 +1,38 @@
+{
+  "name": "@metaphi/airwallet-integrations",
+  "keywords": [
+    "web3-react",
+    "metamask"
+  ],
+  "author": "Akshata Mohanty <akshata.mohanty@metaphi.xyz>",
+  "license": "MIT",
+  "repository": "github:metaphi-org/metaphi-api",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "1.0.0-alpha.0",
+  "files": [
+    "dist/*"
+  ],
+  "type": "commonjs",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "start": "tsc --watch"
+  },
+  "dependencies": {
+    "@ethersproject/experimental": "^5.6.2",
+    "@ethersproject/providers": "^5.6.8",
+    "@metamask/detect-provider": "^1.2.0",
+    "@metaphi/airwallet-api": "^0.0.2",
+    "@metaphi/airwallet-ui": "^0.0.16",
+    "@web3-react/types": "^8.0.17-beta.0"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "@web3-react/store": "^8.0.22-beta.0"
+  }
+}
