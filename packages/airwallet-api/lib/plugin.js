@@ -1,5 +1,7 @@
 const Web3 = require('web3');
 const WALLET_EMBED_ID = 'mWalletPlugin';
+const { Web3Provider } = require('@ethersproject/providers')
+const { Eip1193Bridge } = require('@ethersproject/experimental')
 
 // Source: https://stackoverflow.com/a/2117523/3545099
 function uuidv4() {
@@ -18,19 +20,24 @@ class WalletPlugin {
   _wallet = {};
   _provider = null;
   _walletUI = null;
+  _chainId = 80001
 
   constructor(options) {
     this._options = options;
     this._accountConfig = options.accountConfig;
     this._networkConfig = options.networkConfig;
     this._SOURCE_URL = 'https://metaphi.xyz';
-    this._provider = new Web3(
-      new Web3.providers.HttpProvider(options.networkConfig.rpcUrl),
-    );
 
     if (options.custom.userInputMethod) {
       this._walletUI = options.custom.userInputMethod;
     }
+
+    if (options.networkConfig.chainId) {
+      this._chainId = options.networkConfig.chainId
+    }
+
+    // Setup provider. This provider doesnot have a signer yet.
+    this._setupProvider(options.networkConfig.rpcUrl)
 
     console.log('Metaphi wallet initialized.', options);
   }
@@ -141,9 +148,18 @@ class WalletPlugin {
   };
 
   /**
+   * Get chain ID. 
+   * 
+   * @returns Number
+   */
+  getChainId = () => {
+    return this._chainId
+  }
+
+  /**
    * Get provider instance.
    *
-   * @returns {Object} web3 provider
+   * @returns {JsonRpcProvider} jsonRpc provider
    */
   getProvider = () => {
     return this._provider;
@@ -403,6 +419,12 @@ class WalletPlugin {
     const src = `${this._SOURCE_URL}/wallet/plugin?clientId=${clientId}&apiKey=${apiKey}&rpc=${rpc}&source=${source}`;
     return src;
   };
+
+  _setupProvider = (url) => {
+    const provider = new Web3(new Web3.providers.HttpProvider(url));
+    const web3provider = new Web3Provider(provider.currentProvider)
+    this._provider = new Eip1193Bridge(web3provider.getSigner(), provider)
+  }
 }
 
 if (global.window) {

@@ -1,6 +1,6 @@
 {
   "name": "@metaphi/airwallet-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Metaphi Airwallet API to add whitelabel, non-custodial wallets to dApps",
   "keywords": [
     "blockchain",
@@ -35,6 +35,8 @@
   "dependencies": {
     "@ethereumjs/common": "^2.6.4",
     "@ethereumjs/tx": "^3.5.1",
+    "@ethersproject/experimental": "^5.6.2",
+    "@ethersproject/providers": "^5.6.8",
     "@maticnetwork/maticjs": "^3.3.0",
     "@maticnetwork/maticjs-plasma": "^1.0.4",
     "@maticnetwork/maticjs-web3": "^1.0.1",
