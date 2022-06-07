@@ -110,8 +110,14 @@ class MetaphiConnector extends Connector {
         return myPromise
       }
       this.provider = self.mWalletInstance.getProvider() as MetaphiProvider
-      const signer = this.provider?.getSigner()
-      signer.signMessage = tempSignMessage
+      console.log('Provider Signer Inited.')
+      this.provider.getSigner = (accountAddress: string): Function => {
+        const signer = self.provider?.getSigner(accountAddress)
+        console.log("Overriding signer: ", accountAddress, tempSignMessage)
+        signer.signMessage = tempSignMessage
+        return signer
+      }
+     
 
       
       // Add Instance to window.

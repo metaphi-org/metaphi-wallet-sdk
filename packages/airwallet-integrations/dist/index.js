@@ -42,7 +42,6 @@ class MetaphiConnector extends Connector {
             });
             const self = this;
             this.mWalletInstance.connect((msg) => __awaiter(this, void 0, void 0, function* () {
-                var _a;
                 if (!self.mWalletInstance) {
                     return reject();
                 }
@@ -51,13 +50,13 @@ class MetaphiConnector extends Connector {
                 }
                 // HACK!
                 const tempSignMessage = (message) => __awaiter(this, void 0, void 0, function* () {
-                    var _b;
+                    var _a;
                     let _resolve, _reject;
                     const myPromise = new Promise((resolve, reject) => {
                         _resolve = resolve;
                         _reject = reject;
                     });
-                    (_b = self.mWalletInstance) === null || _b === void 0 ? void 0 : _b.signMessage({ message }, (sig) => {
+                    (_a = self.mWalletInstance) === null || _a === void 0 ? void 0 : _a.signMessage({ message }, (sig) => {
                         if (sig.sig)
                             _resolve(sig.sig);
                         if (sig.err)
@@ -66,8 +65,14 @@ class MetaphiConnector extends Connector {
                     return myPromise;
                 });
                 this.provider = self.mWalletInstance.getProvider();
-                const signer = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.getSigner();
-                signer.signMessage = tempSignMessage;
+                console.log('Provider Signer Inited.');
+                this.provider.getSigner = (accountAddress) => {
+                    var _a;
+                    const signer = (_a = self.provider) === null || _a === void 0 ? void 0 : _a.getSigner(accountAddress);
+                    console.log("Overriding signer: ", accountAddress, tempSignMessage);
+                    signer.signMessage = tempSignMessage;
+                    return signer;
+                };
                 // Add Instance to window.
                 window.mWallet = self.mWalletInstance;
                 resolve();
