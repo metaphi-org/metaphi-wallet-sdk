@@ -451,7 +451,6 @@ class WalletPlugin {
   };
 
   _setupProvider = (url) => {
-    const web3provider = new Web3Provider(provider.currentProvider)
     this._provider = new MetaphiJsonRpcProvider(this._networkConfig.rpcUrl, null, this._walletUI)
   }
 }
