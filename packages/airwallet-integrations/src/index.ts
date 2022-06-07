@@ -13,13 +13,13 @@ type MetaphiWallet = {
   init: () => void;
   disconnect: () => void;
   getAddress: () => string;
-  signMessage: (payload: { message: string }, callback: (sig: object) => void ) => void;
+  signMessage: (payload: { message: string }, callback: (sig: { sig: string, err?: string }) => void ) => void;
   signTransation: (payload: { message: string }, callback: (sig: object) => void ) => void;
   getProvider: () => Provider;
   getChainId: () => number;
 };
 
-type MetaphiProvider = Provider & { isMetaphi?: boolean; isConnected?: () => boolean; providers?: MetaphiProvider[] }
+type MetaphiProvider = Provider & { isMetaphi?: boolean; isConnected?: () => boolean; providers?: MetaphiProvider[], signMessage: (message: string) => Promise<string> }
 
 type MetaphAccountConfig = {
   clientId: string
@@ -96,7 +96,22 @@ class MetaphiConnector extends Connector {
       if (!self.mWalletInstance) { return reject() }
       if (!msg.connected) { return reject() }
 
-      this.provider = self.mWalletInstance.getProvider()
+      // HACK!
+      const tempSignMessage = async (message: string):Promise<string> => {
+        let _resolve: Function, _reject: Function
+        const myPromise: Promise<string> = new Promise((resolve, reject) => {
+          _resolve = resolve
+          _reject = reject
+        })
+        self.mWalletInstance?.signMessage({ message }, (sig) => {
+          if (sig.sig) _resolve(sig.sig)
+          if (sig.err) _reject(sig.err)
+        })
+        return myPromise
+      }
+      this.provider = self.mWalletInstance.getProvider() as MetaphiProvider 
+      this.provider.signMessage = tempSignMessage
+
       
       // Add Instance to window.
       window.mWallet = self.mWalletInstance

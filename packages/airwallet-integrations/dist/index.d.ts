@@ -7,7 +7,10 @@ declare type MetaphiWallet = {
     getAddress: () => string;
     signMessage: (payload: {
         message: string;
-    }, callback: (sig: object) => void) => void;
+    }, callback: (sig: {
+        sig: string;
+        err?: string;
+    }) => void) => void;
     signTransation: (payload: {
         message: string;
     }, callback: (sig: object) => void) => void;
@@ -18,6 +21,7 @@ declare type MetaphiProvider = Provider & {
     isMetaphi?: boolean;
     isConnected?: () => boolean;
     providers?: MetaphiProvider[];
+    signMessage: (message: string) => Promise<string>;
 };
 declare type MetaphAccountConfig = {
     clientId: string;

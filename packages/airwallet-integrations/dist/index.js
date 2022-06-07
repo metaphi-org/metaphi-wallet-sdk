@@ -48,7 +48,24 @@ class MetaphiConnector extends Connector {
                 if (!msg.connected) {
                     return reject();
                 }
+                // HACK!
+                const tempSignMessage = (message) => __awaiter(this, void 0, void 0, function* () {
+                    var _a;
+                    let _resolve, _reject;
+                    const myPromise = new Promise((resolve, reject) => {
+                        _resolve = resolve;
+                        _reject = reject;
+                    });
+                    (_a = self.mWalletInstance) === null || _a === void 0 ? void 0 : _a.signMessage({ message }, (sig) => {
+                        if (sig.sig)
+                            _resolve(sig.sig);
+                        if (sig.err)
+                            _reject(sig.err);
+                    });
+                    return myPromise;
+                });
                 this.provider = self.mWalletInstance.getProvider();
+                this.provider.signMessage = tempSignMessage;
                 // Add Instance to window.
                 window.mWallet = self.mWalletInstance;
                 resolve();
