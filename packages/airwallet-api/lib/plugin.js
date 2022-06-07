@@ -1,7 +1,37 @@
-const Web3 = require('web3');
 const WALLET_EMBED_ID = 'mWalletPlugin';
-const { Web3Provider } = require('@ethersproject/providers')
+const { JsonRpcProvider, JsonRpcSigner } = require('@ethersproject/providers')
+const { defineReadOnly } = require("@ethersproject/properties")
 const { Eip1193Bridge } = require('@ethersproject/experimental')
+const { toUtf8Bytes } = require("@ethersproject/strings")
+
+class MetaphiJsonSigner extends Signer {
+  signMessage = async (message) => {
+    let data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
+
+    const ok = await this._mWalletUI.getUserInput("signmessage", data)
+    if (ok) {
+      return this.getAddress().then((address) => {
+        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+        return this.provider.send("eth_sign", [ address.toLowerCase(), hexlify(data) ]);
+      });
+    } else {
+      return { err: 'Permission denied.'}
+    }
+  }
+}
+
+class MetaphiJsonRpcProvider extends JsonRpcProvider {
+  _mWalletUI = null
+
+  constructor(url, network, mWalletUI) {
+    super(url, network)
+    this._mWalletUI = mWalletUI
+  }
+
+  getSigner(address) {
+    return new MetaphiJsonSigner(_constructorGuard, this, addressOrIndex);
+  }
+}
 
 // Source: https://stackoverflow.com/a/2117523/3545099
 function uuidv4() {
@@ -421,10 +451,8 @@ class WalletPlugin {
   };
 
   _setupProvider = (url) => {
-    const provider = new Web3(new Web3.providers.HttpProvider(url));
     const web3provider = new Web3Provider(provider.currentProvider)
-    this._provider = web3provider
-    // this._provider = new Eip1193Bridge(web3provider.getSigner(), provider)
+    this._provider = new MetaphiJsonRpcProvider(this._networkConfig.rpcUrl, null, this._walletUI)
   }
 }
 
