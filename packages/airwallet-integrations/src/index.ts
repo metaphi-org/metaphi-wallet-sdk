@@ -111,16 +111,16 @@ class MetaphiConnector extends Connector {
       }
       this.provider = self.mWalletInstance.getProvider() as MetaphiProvider
       console.log('Provider Signer Inited.')
-      const oldSigner = this.provider.getSigner
+      const oldSigner = this.provider.getSigner.bind(this)
       const newSigner = (accountAddress: string): Function => {
         console.log('Get signer with address: ', accountAddress)
         try {
-          const signer = oldSigner(accountAddress).bind(self)
+          const signer = oldSigner(accountAddress)
           console.log("Overriding signer: ", accountAddress, tempSignMessage)
           signer.signMessage = tempSignMessage
           return signer
         } catch (ex) {
-          console.error('unable to override signer')
+          console.error('unable to override signer', ex)
           return oldSigner
         }
       }
