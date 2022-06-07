@@ -64,12 +64,12 @@ class MetaphiConnector extends Connector {
                     });
                     return myPromise;
                 });
-                this.provider = self.mWalletInstance.getProvider();
-                console.log('Provider Signer Inited.');
-                const oldSigner = this.provider.getSigner.bind(this);
-                const newSigner = (accountAddress) => {
+                const provider = self.mWalletInstance.getProvider();
+                const oldSigner = provider.getSigner.bind(this.provider);
+                const newSigner = function (accountAddress) {
                     console.log('Get signer with address: ', accountAddress);
                     try {
+                        console.log('Old Signer', oldSigner);
                         const signer = oldSigner(accountAddress);
                         console.log("Overriding signer: ", accountAddress, tempSignMessage);
                         signer.signMessage = tempSignMessage;
@@ -80,7 +80,8 @@ class MetaphiConnector extends Connector {
                         return oldSigner;
                     }
                 };
-                this.provider.getSigner = newSigner.bind(this);
+                provider.getSigner = newSigner;
+                this.provider = provider;
                 // Add Instance to window.
                 window.mWallet = self.mWalletInstance;
                 resolve();
