@@ -423,7 +423,8 @@ class WalletPlugin {
   _setupProvider = (url) => {
     const provider = new Web3(new Web3.providers.HttpProvider(url));
     const web3provider = new Web3Provider(provider.currentProvider)
-    this._provider = new Eip1193Bridge(web3provider.getSigner(), provider)
+    this._provider = web3provider
+    // this._provider = new Eip1193Bridge(web3provider.getSigner(), provider)
   }
 }
 
