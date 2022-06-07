@@ -4,7 +4,7 @@ const { defineReadOnly } = require("@ethersproject/properties")
 const { Eip1193Bridge } = require('@ethersproject/experimental')
 const { toUtf8Bytes } = require("@ethersproject/strings")
 
-class MetaphiJsonSigner extends Signer {
+class MetaphiJsonSigner extends JsonRpcSigner {
   signMessage = async (message) => {
     let data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
 
