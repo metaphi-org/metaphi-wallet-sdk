@@ -96,39 +96,7 @@ class MetaphiConnector extends Connector {
       if (!self.mWalletInstance) { return reject() }
       if (!msg.connected) { return reject() }
 
-      // HACK!
-      const tempSignMessage = async (message: string):Promise<string> => {
-        let _resolve: Function, _reject: Function
-        const myPromise: Promise<string> = new Promise((resolve, reject) => {
-          _resolve = resolve
-          _reject = reject
-        })
-        self.mWalletInstance?.signMessage({ message }, (sig) => {
-          if (sig.sig) _resolve(sig.sig)
-          if (sig.err) _reject(sig.err)
-        })
-        return myPromise
-      }
-
-      const provider = self.mWalletInstance.getProvider() as MetaphiProvider
-      const oldSigner = provider.getSigner.bind(this.provider)
-      const newSigner = function (accountAddress: string) {
-        console.log('Get signer with address: ', accountAddress)
-        try {
-          console.log('Old Signer', oldSigner)
-          const signer = oldSigner(accountAddress)
-          console.log("Overriding signer: ", accountAddress, tempSignMessage)
-          signer.signMessage = tempSignMessage
-          return signer
-        } catch (ex) {
-          console.error('unable to override signer', ex)
-          return oldSigner
-        }
-      }
-      provider.getSigner = newSigner
-      this.provider = provider
-     
-
+      this.provider = self.mWalletInstance.getProvider() as MetaphiProvider
       
       // Add Instance to window.
       window.mWallet = self.mWalletInstance
