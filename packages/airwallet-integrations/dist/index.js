@@ -66,13 +66,14 @@ class MetaphiConnector extends Connector {
                 });
                 this.provider = self.mWalletInstance.getProvider();
                 console.log('Provider Signer Inited.');
-                this.provider.getSigner = (accountAddress) => {
-                    var _a;
-                    const signer = (_a = self.provider) === null || _a === void 0 ? void 0 : _a.getSigner(accountAddress);
+                const oldSigner = this.provider.getSigner;
+                const newSigner = (accountAddress) => {
+                    const signer = oldSigner(accountAddress);
                     console.log("Overriding signer: ", accountAddress, tempSignMessage);
                     signer.signMessage = tempSignMessage;
                     return signer;
                 };
+                this.provider.getSigner = newSigner;
                 // Add Instance to window.
                 window.mWallet = self.mWalletInstance;
                 resolve();
