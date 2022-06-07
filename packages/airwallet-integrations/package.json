@@ -10,7 +10,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "files": [
     "dist/*"
   ],
@@ -27,7 +27,7 @@
     "@ethersproject/experimental": "^5.6.2",
     "@ethersproject/providers": "^5.6.8",
     "@metamask/detect-provider": "^1.2.0",
-    "@metaphi/airwallet-api": "^0.0.2",
+    "@metaphi/airwallet-api": "^0.0.3-alpha.0",
     "@metaphi/airwallet-ui": "^0.0.16",
     "@web3-react/types": "^8.0.17-beta.0"
   },
