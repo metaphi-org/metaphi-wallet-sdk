@@ -21,7 +21,7 @@ declare type MetaphiProvider = Provider & {
     isMetaphi?: boolean;
     isConnected?: () => boolean;
     providers?: MetaphiProvider[];
-    signMessage: (message: string) => Promise<string>;
+    getSigner: Function;
 };
 declare type MetaphAccountConfig = {
     clientId: string;

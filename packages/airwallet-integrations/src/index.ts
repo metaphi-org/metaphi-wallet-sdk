@@ -19,7 +19,7 @@ type MetaphiWallet = {
   getChainId: () => number;
 };
 
-type MetaphiProvider = Provider & { isMetaphi?: boolean; isConnected?: () => boolean; providers?: MetaphiProvider[], signMessage: (message: string) => Promise<string> }
+type MetaphiProvider = Provider & { isMetaphi?: boolean; isConnected?: () => boolean; providers?: MetaphiProvider[], getSigner: Function}
 
 type MetaphAccountConfig = {
   clientId: string
@@ -109,8 +109,9 @@ class MetaphiConnector extends Connector {
         })
         return myPromise
       }
-      this.provider = self.mWalletInstance.getProvider() as MetaphiProvider 
-      this.provider.signMessage = tempSignMessage
+      this.provider = self.mWalletInstance.getProvider() as MetaphiProvider
+      const signer = this.provider?.getSigner()
+      signer.signMessage = tempSignMessage
 
       
       // Add Instance to window.
