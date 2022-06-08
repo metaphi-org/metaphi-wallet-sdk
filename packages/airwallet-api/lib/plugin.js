@@ -1,47 +1,6 @@
 const WALLET_EMBED_ID = 'mWalletPlugin';
-const { JsonRpcProvider, JsonRpcSigner } = require('@ethersproject/providers')
-const { defineReadOnly } = require("@ethersproject/properties")
-const { Eip1193Bridge } = require('@ethersproject/experimental')
-const { toUtf8Bytes } = require("@ethersproject/strings")
-
-class MetaphiJsonSigner extends JsonRpcSigner {
-  signMessage = async (message) => {
-    let data = ((typeof(message) === "string") ? toUtf8Bytes(message): message);
-
-    const ok = await this._mWalletUI.getUserInput("signmessage", data)
-    if (ok) {
-      return this.getAddress().then((address) => {
-        // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-        return this.provider.send("eth_sign", [ address.toLowerCase(), hexlify(data) ]);
-      });
-    } else {
-      return { err: 'Permission denied.'}
-    }
-  }
-}
-
-class MetaphiJsonRpcProvider extends JsonRpcProvider {
-  _mWalletUI = null
-
-  constructor(url, network, mWalletUI) {
-    super(url, network)
-    this._mWalletUI = mWalletUI
-  }
-
-  getSigner(address) {
-    return new MetaphiJsonSigner(_constructorGuard, this, addressOrIndex);
-  }
-}
-
-// Source: https://stackoverflow.com/a/2117523/3545099
-function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (
-      c ^
-      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-    ).toString(16),
-  );
-}
+const { MetaphiJsonRpcProvider } = require('./MetaphiProvider')
+const { uuidv4 } = require('./utils')
 
 class WalletPlugin {
   _callbacks = { callbackFns: {} };
@@ -451,7 +410,7 @@ class WalletPlugin {
   };
 
   _setupProvider = (url) => {
-    this._provider = new MetaphiJsonRpcProvider(this._networkConfig.rpcUrl, null, this._walletUI)
+    this._provider = new MetaphiJsonRpcProvider(this._networkConfig.rpcUrl, null, this)
   }
 }
 
