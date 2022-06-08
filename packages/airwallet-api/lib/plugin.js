@@ -9,7 +9,7 @@ class WalletPlugin {
   _wallet = {};
   _provider = null;
   _walletUI = null;
-  _chainId = 80001
+  _networkConfig = null
 
   constructor(options) {
     this._options = options;
@@ -21,12 +21,8 @@ class WalletPlugin {
       this._walletUI = options.custom.userInputMethod;
     }
 
-    if (options.networkConfig.chainId) {
-      this._chainId = options.networkConfig.chainId
-    }
-
     // Setup provider. This provider doesnot have a signer yet.
-    this._setupProvider(options.networkConfig.rpcUrl)
+    this._setupProvider()
 
     console.log('Metaphi wallet initialized.', options);
   }
@@ -117,9 +113,10 @@ class WalletPlugin {
    * @param {Object} payload  { transaction: Object }
    * @param {Function} callback
    */
-  signTransaction = async (payload, callback) => {
-    const tx = { ...payload, address: this._wallet.address };
-    const ok = await this.getUserInput('signTransaction', tx);
+  signTransaction = async (transaction, callback) => {
+    console.log("actual sign transaction function", transaction)
+    const payload = { transaction }
+    const ok = await this.getUserInput('signTransaction', transaction);
     if (!ok) {
       if (callback) callback({ err: 'User didnot authorize signing.' });
     }
@@ -142,7 +139,7 @@ class WalletPlugin {
    * @returns Number
    */
   getChainId = () => {
-    return this._chainId
+    return this._networkConfig.chainId
   }
 
   /**
@@ -409,8 +406,9 @@ class WalletPlugin {
     return src;
   };
 
-  _setupProvider = (url) => {
-    this._provider = new MetaphiJsonRpcProvider(this._networkConfig.rpcUrl, null, this)
+  _setupProvider = () => {
+    const { rpcUrl, name, chainId } = this._networkConfig
+    this._provider = new MetaphiJsonRpcProvider(rpcUrl, { name, chainId }, this)
   }
 }
 

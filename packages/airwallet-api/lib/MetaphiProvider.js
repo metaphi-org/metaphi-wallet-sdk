@@ -4,6 +4,9 @@ const { defineReadOnly } = require("@ethersproject/properties")
 const { Eip1193Bridge } = require('@ethersproject/experimental')
 const { toUtf8Bytes } = require("@ethersproject/strings")
 const { Signer } = require('@ethersproject/abstract-signer')
+import { keccak256 } from "@ethersproject/keccak256";
+import { serialize } from "@ethersproject/transactions";
+import { ethers } from "ethers"
 
 const _constructorGuard = 11;
 
@@ -25,6 +28,10 @@ class MetaphiJsonSigner extends Signer {
         }
     } 
 
+    getAddress = async () => {
+        return new Promise((resolve, reject) => resolve(this._address))
+    }
+
     signMessage = async (message) => {
         let self = this
         return new Promise((resolve, reject) => {
@@ -33,6 +40,30 @@ class MetaphiJsonSigner extends Signer {
                 if (err) reject(err)
             })
         })
+    }
+
+    signTransaction = async (transaction) => {
+        // TODO: remove, only for testing
+        const txHash = keccak256(serialize(transaction))
+
+        let self = this
+        return new Promise((resolve, reject) => {
+            self.provider.getWallet().signMessage({ message: txHash }, ({ sig, err }) => {
+                console.log('Signed Transaction: ', sig)
+                if (sig) resolve(serialize(transaction, sig))
+                if (err) reject(err)
+            })
+        })
+    }
+
+    sendTransaction = async (transaction) => {
+        this._checkProvider("sendTransaction");
+        const tx = await this.populateTransaction(transaction);
+        const txData = { 
+            ...tx, 
+        }
+        const signedTx = await this.signTransaction(txData);
+        return await this.provider.sendTransaction(signedTx);
     }
 }
 
