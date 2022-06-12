@@ -123,7 +123,7 @@ class MetaphiWalletApi {
 
   /* Public methods */
   // Login Metaphi wallet
-  login = async (userId) => {
+  login = async (userId, userPin) => {
     this._logger(`Logging in: ${userId}.`);
 
     let response = { verified: false };
@@ -164,6 +164,13 @@ class MetaphiWalletApi {
     // Set public address.
     this._publicAddress = address;
 
+    // If the user is logged-in, and reconnects via pin
+    // cache the pin.
+    if (!!jwt && userPin !== undefined) {
+      this._setCachedPin(userPin)
+      response.autoconnect = true
+    }
+
     // Extract public address.
     this._logger(`Wallet Authenticated: ${this._publicAddress}`);
 
@@ -175,17 +182,28 @@ class MetaphiWalletApi {
     return !!this._userId;
   };
 
+  /**
+   * Gets all logged-in users, with autoconnect status.
+   * 
+   * @returns Array
+   */
   getLoggedInUsers = () => {
-    const allCookies = Cookies.get();
-    const cookieNames = Object.keys(allCookies);
-    const emails = [];
-    cookieNames.forEach((key) => {
+    const loggedInUsers = [];
+
+    store.each(function(value, key) {
+      // Get all valid jwts.
       const groups = key.match(/(metaphi-jwt-)(\S*)/);
       if (groups && groups[2]) {
-        emails.push(groups[2]);
+        const email = groups[2]
+        // Find corresponding cached pin, if exists.
+        const cachedPin = store.get(`metaphi-pin-${email}`)
+
+        // Add to array.
+        loggedInUsers.push({ email, autoconnect: !!cachedPin });
       }
-    });
-    return emails;
+    })
+
+    return loggedInUsers;
   };
 
   // Wallet Provider.
@@ -201,6 +219,9 @@ class MetaphiWalletApi {
 
   // Create a new wallet for the user. Use with caution.
   createNewWallet = async (userPin) => {
+    if (userPin === undefined) {
+      throw new Error('Error creating wallet: User pin not found.')
+    }
     // If the public address does not exist or minimum shares are not met
     //    a. Generate the wallet key and address locally.
     //    b. Break it up into three parts, encrypt using symmetric key.
@@ -271,8 +292,17 @@ class MetaphiWalletApi {
 
   // Connect wallet.
   connect = async (userPin) => {
+    let pin = userPin || this._getCachedPin()
+
     // Connect wallet.
     this._logger("Connecting wallet.");
+
+    // If user pin isn't provided, check cache.
+    if (pin === undefined) {
+      this._logger("Error connecting wallet: Pin not found.");
+      return 
+    }
+
     await this._connectWallet(userPin);
     if (this._publicAddress && this._privateKey) {
       this._logger("Wallet reconstruction successful. Wallet connected.");
@@ -610,6 +640,29 @@ class MetaphiWalletApi {
 
     // Assign.
     this._plasmaClient = plasmaClient;
+  };
+
+  _getCachedPinName =  () => {
+    if (!this._userId) {
+      throw new Error("User not found.");
+    }
+
+    return `metaphi-pin-${this._userId}`;
+  }
+
+  _getCachedPin = () => {
+    try {
+      const keyName = this._getCachedPinName();
+      return store.get(keyName);
+    } catch (ex) {
+      return null;
+    }
+  };
+
+  _setCachedPin = (jwt) => {
+    const keyName = this._getCachedPinName();
+    const expires = new Date().getTime() + 30 * 60000; // Expires in half an hour.
+    store.set(keyName, jwt, expires);
   };
 
   _getAuthenticatedJwtCookieName = () => {

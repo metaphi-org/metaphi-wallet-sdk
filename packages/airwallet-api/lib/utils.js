@@ -64,3 +64,11 @@ export function uuidv4() {
     ).toString(16),
   );
 }
+
+export function getMetaphiIframeDomain (env) {
+  if (env === 'development') {
+    return 'http://localhost:8080'
+  }
+
+  return 'https://metaphi.xyz'
+}

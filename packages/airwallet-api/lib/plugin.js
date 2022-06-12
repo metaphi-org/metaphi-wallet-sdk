@@ -1,7 +1,12 @@
-const WALLET_EMBED_ID = 'mWalletPlugin';
 const { MetaphiJsonRpcProvider } = require('./MetaphiProvider')
-const { uuidv4 } = require('./utils')
+const { uuidv4, getMetaphiIframeDomain } = require('./utils')
+const { MetaphiIframe, MetaphiInputTypes, WALLET_EMBED_ID } = require('./constants')
 
+/**
+ * Class to handle communication with a Metaphi Wallet instance, 
+ * embedded in an Iframe.
+ * 
+ */
 class WalletPlugin {
   _callbacks = { callbackFns: {} };
   _options;
@@ -12,10 +17,14 @@ class WalletPlugin {
   _networkConfig = null
 
   constructor(options) {
+    // Set options.
     this._options = options;
     this._accountConfig = options.accountConfig;
     this._networkConfig = options.networkConfig;
-    this._SOURCE_URL = 'https://metaphi.xyz';
+
+    // Set metaphi iframe domain.
+    this._metaphiBaseDomain = getMetaphiIframeDomain(options.env);
+    console.log('Metaphi Base Domain: ', this._metaphiBaseDomain)
 
     if (options.custom.userInputMethod) {
       this._walletUI = options.custom.userInputMethod;
@@ -40,7 +49,7 @@ class WalletPlugin {
       // Setup iframe.
       const ifrm = document.createElement('iframe');
       ifrm.setAttribute('id', WALLET_EMBED_ID);
-      const source = this._getSource();
+      const source = this._getIframeSource();
       ifrm.setAttribute('src', source);
       ifrm.setAttribute('height', 0);
       ifrm.setAttribute('width', 0);
@@ -94,7 +103,7 @@ class WalletPlugin {
   };
 
   /**
-   *
+   * 
    * @param {Object} payload  { message: String }
    * @param {function} callback
    */
@@ -156,29 +165,30 @@ class WalletPlugin {
    * @param {*} callback
    */
   getUserInput = async (inputType, payload = {}) => {
-    if (!this._walletUI) {
-      return await this.getUserInputDefault(inputType);
+    let value
+
+    if (this._walletUI) {
+      value = await this._walletUI.getUserInput(inputType, payload);
+    } else {
+      // Default inputs.
+      switch (inputType) {
+        case MetaphiInputTypes.EMAIL:
+          value = prompt('Please enter your email.');
+          break;
+        case MetaphiInputTypes.VERIFICATION_CODE:
+          value = prompt('Please enter authorization code send to your email.');
+          break;
+        case MetaphiInputTypes.USER_PIN:
+        case MetaphiInputTypes.PIN_RECONNECT:
+          value = prompt('Please enter your user pin.');
+          break;
+        case MetaphiInputTypes.TRANSACTION_SIGN:
+          value = confirm('Sign this message?');
+          break;
+      }
     }
 
-    let value;
-    switch (inputType.toLowerCase()) {
-      case 'email':
-        value = await this._walletUI.getEmail(payload);
-        break;
-      case 'verificationcode':
-        value = await this._walletUI.getVerificationCode(payload);
-        break;
-      case 'pin':
-        value = await this._walletUI.getUserPin(payload);
-        break;
-      case 'signmessage':
-        value = await this._walletUI.getUserSigningConfirmation(payload);
-        break;
-      case 'signtransaction':
-        value = await this._walletUI.getUserTransactionConfirmation(payload);
-        break;
-    }
-    return value;
+    return value
   };
 
   showUserError = (error, inputType) => {
@@ -193,28 +203,6 @@ class WalletPlugin {
     alert(error.message);
   };
 
-  getUserInputDefault = (inputType) => {
-    let value;
-    switch (inputType.toLowerCase()) {
-      case 'email':
-        value = prompt('Please enter your email.');
-        break;
-      case 'verificationcode':
-        value = prompt('Please enter authorization code send to your email.');
-        break;
-      case 'pin':
-        value = prompt('Please enter your 6-digit pin.');
-        break;
-      case 'signmessage':
-        value = confirm('Sign this message?');
-        break;
-      case 'signtransaction':
-        value = confirm('Sign this transaction?');
-        break;
-    }
-    return value;
-  };
-
   // Internal. Only exposed, for testing.
   createWallet = (callback) => {
     this._sendEvent({ event: 'createWallet' }, callback);
@@ -224,6 +212,10 @@ class WalletPlugin {
   _getInstance = () => {
     return document.getElementById(WALLET_EMBED_ID);
   };
+
+  _getPluginSourceUrl = () => {
+
+  }
 
   _initCallbackStore = () => {
     window['__METAPHI__'] = {
@@ -266,15 +258,56 @@ class WalletPlugin {
     }
   };
 
+  /** 
+   * Get logged-in user from Metaphi Iframe.
+   * @returns Promise<LoggedInUser { email: string, autoconnect: boolean }>
+   */
+  _getLoggedInUser = () => {
+    return new Promise((resolve, reject) => {
+      this._sendEvent({ event: MetaphiIframe.GET_LOGGED_IN_USER }, ({loggedInUser, err}) => {
+        if (err) reject(err)
+        resolve(loggedInUser)
+      });
+    })
+  }
+
   // Event
   _login = async () => {
-    const email = await this.getUserInput('email');
-    if (!email) return;
+    let email
+    // Case 1. User is already logged-in. 
+    // If the user is logged-in, Metaphi will have the emailId
+    // and a corresponding jwt. Additionally, if the user-pin is 
+    // cached with Metaphi, autoconnect will be set to true.
+    // LoggedInUser: { email: string, autoconnect: boolean }
+    const loggedInUser = await this._getLoggedInUser()
 
-    // Login event.
-    const payload = { email };
-    this._sendEvent({ event: 'login', payload });
+    if  (loggedInUser) {
+      email = loggedInUser.email
+
+      // Case 1a. If user has autoconnect set to true, 
+      // login the user automatically
+      if (loggedInUser.autoconnect) {
+        this._sendLoginEvent(email)
+        return
+      }
+
+      // Case 1b. If user has autoconnect is set to false, 
+      // prompt the user for the pin. And then, autoconnect.
+      const userPin = await this.getUserInput(MetaphiInputTypes.PIN_RECONNECT);
+      this._sendLoginEvent(email, userPin)
+      return
+    }
+
+    // Case 2. User is not logged-in.
+    email = await this.getUserInput('email');
+    this._sendLoginEvent(email)
   };
+
+  _sendLoginEvent = (email, userPin) => {
+    // Login event.
+    const payload = { email, userPin };
+    this._sendEvent({ event: 'login', payload });
+  }
 
   // Event listener
   _handleLogin = (payload) => {
@@ -285,7 +318,7 @@ class WalletPlugin {
 
     if (payload.verified) {
       // Trigger connect step.
-      return this._connect(payload.email);
+      return this._connect(payload.email, payload.autoconnect);
     }
 
     // Trigger verification step.
@@ -326,19 +359,27 @@ class WalletPlugin {
   };
 
   // Event.
-  _connect = async (email) => {
-    const userPin = await this.getUserInput('Pin');
+  _connect = async (email, autoconnect) => {
+    let userPin
+    if (!autoconnect) {
+      userPin = await this.getUserInput('Pin');
+    }
+    
+    this._sendConnectEvent(email, userPin)
+  };
+
+  // Send connect event.
+  _sendConnectEvent = async (email, userPin) => {
     const payload = { email, userPin };
     this._sendEvent({ event: 'connect', payload });
-    this._walletUI.updateState('processing');
-  };
+    this._walletUI.updateState(MetaphiInputTypes.PROCESSING);
+  }
 
   // Listener.
   _handleConnect = (payload) => {
-    console.log('payload connect', payload);
     this._wallet.address = payload.address;
     if (payload.connected) {
-      this._walletUI.updateState('success', {
+      this._walletUI.updateState(MetaphiInputTypes.SUCCESS, {
         address: payload.address,
         dApp: this._accountConfig.dApp,
       });
@@ -387,28 +428,36 @@ class WalletPlugin {
   // Post message to child frame.
   _postMessage = (request) => {
     const frame = this._getInstance();
-    frame.contentWindow.postMessage(request, this._SOURCE_URL);
+    console.log('Account Config: ', this._accountConfig.domain)
+    const targetDomain = this._metaphiBaseDomain
+    console.log('Target Domain: ', targetDomain)
+    frame.contentWindow.postMessage(request, targetDomain);
   };
 
   // Handle message.
   _receiveMessage = (event) => {
-    if (event.origin.startsWith(this._SOURCE_URL)) {
+    if (event.origin.startsWith(this._metaphiBaseDomain)) {
       this._executeCallback(event.data.callbackId, event.data.payload);
     }
   };
 
-  _getSource = () => {
+  _getIframeSource = () => {
     const rpc = this._networkConfig.rpcUrl;
     const apiKey = this._accountConfig.apiKey;
     const clientId = this._accountConfig.clientId;
     const source = this._accountConfig.domain;
-    const src = `${this._SOURCE_URL}/wallet/plugin?clientId=${clientId}&apiKey=${apiKey}&rpc=${rpc}&source=${source}`;
+    const src = `${this._metaphiBaseDomain}/wallet/plugin?clientId=${clientId}&apiKey=${apiKey}&rpc=${rpc}&source=${source}`;
     return src;
   };
 
   _setupProvider = () => {
     const { rpcUrl, name, chainId } = this._networkConfig
     this._provider = new MetaphiJsonRpcProvider(rpcUrl, { name, chainId }, this)
+
+    // web3 convention.
+    if (global.window) {
+      global.window.ethereum = this._provider;
+    }
   }
 }
 

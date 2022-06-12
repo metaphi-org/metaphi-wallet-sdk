@@ -1,3 +1,5 @@
 import MetaphiWallet from "./airwallet";
 import WalletPlugin from "./plugin";
-export { MetaphiWallet, WalletPlugin };
+import { MetaphiInputTypes, MetaphiIframe } from "./constants";
+export { MetaphiWallet, WalletPlugin, MetaphiInputTypes, MetaphiIframe  
+};
