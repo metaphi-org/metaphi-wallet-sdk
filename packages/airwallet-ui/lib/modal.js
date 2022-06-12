@@ -124,6 +124,13 @@ class MetaphiWalletInteractionHandler extends React.Component {
             {...dialogProps}
           />
         );
+      case MetaphiInputTypes.PIN_RECONNECT: 
+          return (
+            <ConnectDialog
+              resolve={this._resolve}
+              {...dialogProps}
+            />
+          )
       case MetaphiInputTypes.TRANSACTION_SIGN:
         return (
           <TransactionSigningDialog
