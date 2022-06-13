@@ -73,6 +73,10 @@ class MetaphiConnector extends Connector {
     // if (connectEagerly) void this.connectEagerly()
   }
 
+  private get serverSide() {
+    return typeof window === 'undefined'
+  }
+
   private async isomorphicInitialize(): Promise<void> {
     if (this.serverSide) return Promise.reject(false); 
 
@@ -138,7 +142,7 @@ class MetaphiConnector extends Connector {
     await this.isomorphicInitialize()
     if (!this.provider || !this.mWalletInstance) { 
       if (cancelActivation) cancelActivation()
-      return this.actions.reportError(new Error('provider not found'))
+      return
     }
 
     const accounts: string[] = [this.mWalletInstance.getAddress()]

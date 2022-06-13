@@ -24,6 +24,9 @@ class MetaphiConnector extends Connector {
         this.options = options;
         // if (connectEagerly) void this.connectEagerly()
     }
+    get serverSide() {
+        return typeof window === 'undefined';
+    }
     isomorphicInitialize() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.serverSide)
@@ -88,7 +91,7 @@ class MetaphiConnector extends Connector {
             if (!this.provider || !this.mWalletInstance) {
                 if (cancelActivation)
                     cancelActivation();
-                return this.actions.reportError(new Error('provider not found'));
+                return;
             }
             const accounts = [this.mWalletInstance.getAddress()];
             const chainId = this.mWalletInstance.getChainId();
