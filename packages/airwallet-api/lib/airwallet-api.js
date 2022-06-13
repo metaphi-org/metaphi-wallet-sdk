@@ -308,7 +308,6 @@ class MetaphiWalletApi {
     await this._connectWallet(userPin);
     if (this._publicAddress && this._privateKey) {
       this._logger("Wallet reconstruction successful. Wallet connected.");
-      const shouldCachePin = !!jwt && userPin !== undefined
       console.log('Caching pin.')
       this._setCachedPin(userPin)
     } else {
