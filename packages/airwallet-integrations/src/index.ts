@@ -29,7 +29,9 @@ type MetaphAccountConfig = {
 }
 
 type MetaphiNetworkConfig = {
-  rpcUrl: string
+  rpcUrl: string,
+  chainId: number, 
+  name: string,
 }
 
 type MetaphiCustomConfig = {

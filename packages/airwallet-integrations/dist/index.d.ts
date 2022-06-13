@@ -31,6 +31,8 @@ declare type MetaphAccountConfig = {
 };
 declare type MetaphiNetworkConfig = {
     rpcUrl: string;
+    chainId: number;
+    name: string;
 };
 declare type MetaphiCustomConfig = {
     userInputMethod: any;
