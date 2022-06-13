@@ -907,25 +907,37 @@ class MetaphiWalletApi {
     // Upload shares.
     let uploadedShareCount = 0;
 
-    try {
-      // Pass on a share to Metaphi.
-      await this._uploadToMetaphi(userCreds, address, encrypted_shares[2]);
-      uploadedShareCount++;
+    // Store a share locally.
+    try { 
+      this._uploadToDevice(userCreds, encrypted_shares[0]);
+      uploadedShareCount++
+    } catch (ex) {
+      console.log('Error uploading local share.', ex)
+    }
 
+    // Store share in dApp contact.
+    try { 
       // Pass on a share to the dApp.
       await this._uploadTodApp(userCreds, address, encrypted_shares[1]);
       uploadedShareCount++;
     } catch (ex) {
-      // Add log.
+      console.log('Error uploading dApp share.', ex)
     }
 
-    // Only store in local,
-    // when other shares are successfully uploaded
-    if (uploadedShareCount === 2) {
-      // Store a share locally.
-      this._uploadToDevice(userCreds, encrypted_shares[0]);
-    } else {
-      throw new Error("Error uploading shares. Please try again.", "red");
+    if (uploadedShareCount) {
+      // Store share in Metaphi.
+      try {
+        // Pass on a share to Metaphi.
+        await this._uploadToMetaphi(userCreds, address, encrypted_shares[2]);
+        uploadedShareCount++;
+      } catch (ex) {
+        console.log('Error uploading Metaphi share.', ex)
+      }
+    }
+    
+    if (uploadedShareCount == 2) {
+      // If one of the share uploads failed, add flag to re-upload.
+      store.set(`${userCreds.userEmail}-regenerate`, 'true');
     }
 
     // Wallet object.
