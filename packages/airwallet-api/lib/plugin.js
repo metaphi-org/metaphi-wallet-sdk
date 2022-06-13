@@ -109,7 +109,7 @@ class WalletPlugin {
    */
   signMessage = async (payload, callback) => {
     const tx = { ...payload, address: this._wallet.address };
-    const ok = await this.getUserInput('signMessage', tx);
+    const ok = await this.getUserInput(MetaphiInputTypes.TRANSACTION_SIGN, tx);
     if (!ok) {
       if (callback) callback({ err: 'User didnot authorize signing.' });
     }
@@ -125,7 +125,7 @@ class WalletPlugin {
   signTransaction = async (transaction, callback) => {
     console.log("actual sign transaction function", transaction)
     const payload = { transaction }
-    const ok = await this.getUserInput('signTransaction', transaction);
+    const ok = await this.getUserInput(MetaphiInputTypes.TRANSACTION_SIGN, transaction);
     if (!ok) {
       if (callback) callback({ err: 'User didnot authorize signing.' });
     }
@@ -299,7 +299,7 @@ class WalletPlugin {
     }
 
     // Case 2. User is not logged-in.
-    email = await this.getUserInput('email');
+    email = await this.getUserInput(MetaphiInputTypes.EMAIL);
     this._sendLoginEvent(email)
   };
 
@@ -327,7 +327,7 @@ class WalletPlugin {
 
   // Event
   _verify = async (email) => {
-    const verificationCode = await this.getUserInput('verificationCode');
+    const verificationCode = await this.getUserInput(MetaphiInputTypes.VERIFICATION_CODE);
     const payload = {
       email,
       verificationCode,
@@ -362,7 +362,7 @@ class WalletPlugin {
   _connect = async (email, autoconnect) => {
     let userPin
     if (!autoconnect) {
-      userPin = await this.getUserInput('Pin');
+      userPin = await this.getUserInput(MetaphiInputTypes.USER_PIN);
     }
     
     this._sendConnectEvent(email, userPin)
@@ -428,9 +428,7 @@ class WalletPlugin {
   // Post message to child frame.
   _postMessage = (request) => {
     const frame = this._getInstance();
-    console.log('Account Config: ', this._accountConfig.domain)
     const targetDomain = this._metaphiBaseDomain
-    console.log('Target Domain: ', targetDomain)
     frame.contentWindow.postMessage(request, targetDomain);
   };
 
