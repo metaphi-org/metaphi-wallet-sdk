@@ -10,13 +10,12 @@ import SuccessDialog from './modalContent/SuccessDialog.jsx';
 import ErrorDialog from './modalContent/ErrorDialog.jsx';
 import ConnectDialog from './modalContent/ConnectDialog.jsx';
 // Styles.
-import "./styles/index.scss";
+// import "./styles/index.scss";
 
 /**
  * React component to handle Metaphi Inputs and Dialog promts.
  * Handle all interactions between the user and Metaphi.
- * 
- * 
+ *
  */
 class MetaphiWalletInteractionHandler extends React.Component {
   constructor(props) {
@@ -47,32 +46,24 @@ class MetaphiWalletInteractionHandler extends React.Component {
   };
 
   getVerificationCode = async () => {
-    return this.getUserInput(
-      MetaphiInputTypes.VERIFICATION_CODE,
-    );
+    return this.getUserInput(MetaphiInputTypes.VERIFICATION_CODE);
   };
 
   getUserPin = async () => {
-    return this.getUserInput(
-      MetaphiInputTypes.USER_PIN);
+    return this.getUserInput(MetaphiInputTypes.USER_PIN);
   };
 
   getUserSigningConfirmation = async (payload) => {
-    return this.getUserInput(
-      MetaphiInputTypes.TRANSACTION_SIGN,
-      payload,
-    );
+    return this.getUserInput(MetaphiInputTypes.TRANSACTION_SIGN, payload);
   };
 
   getUserTransactionConfirmation = async (payload) => {
-    return this.getUserInput(
-      MetaphiInputTypes.TRANSACTION_SIGN,
-      payload,
-    );
+    return this.getUserInput(MetaphiInputTypes.TRANSACTION_SIGN, payload);
   };
 
   /** Internal functions. */
   getUserInput = async (inputType, payload) => {
+    console.log('Getting user input: ', inputType, payload);
     if (inputType === undefined) {
       throw new Error('Invalid Input Requested.');
     }
@@ -110,6 +101,7 @@ class MetaphiWalletInteractionHandler extends React.Component {
   };
 
   renderState = (modalState) => {
+    console.log('Rendering State: ', modalState, MetaphiInputTypes.EMAIL);
     const dialogProps = this.state.modalProps;
 
     switch (modalState) {
@@ -124,13 +116,8 @@ class MetaphiWalletInteractionHandler extends React.Component {
             {...dialogProps}
           />
         );
-      case MetaphiInputTypes.PIN_RECONNECT: 
-          return (
-            <ConnectDialog
-              resolve={this._resolve}
-              {...dialogProps}
-            />
-          )
+      case MetaphiInputTypes.PIN_RECONNECT:
+        return <ConnectDialog resolve={this._resolve} {...dialogProps} />;
       case MetaphiInputTypes.TRANSACTION_SIGN:
         return (
           <TransactionSigningDialog

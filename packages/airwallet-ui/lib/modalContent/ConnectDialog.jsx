@@ -1,34 +1,42 @@
-import React from "react";
-import PrimaryButton from "../components/PrimaryButton.jsx";
+import { useState } from 'react';
+import PrimaryButton from '../components/PrimaryButton.jsx';
+import Input from '../components/Input.jsx';
 
-const MAX_PIN_LENGTH = 4
+const MAX_PIN_LENGTH = 4;
 
-const ConnectDialog = ({ resolve, email }) => {
+const ConnectDialog = ({ resolve, email, dApp }) => {
   const [userPin, setUserPin] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleUserPin = (e) => {
-    setUserPin(e.target.value);
-    if (e.target.value.length === MAX_PIN_LENGTH) {
-      resolve(userPin)
-      setIsLoading(true);
-    }
+  const handleConnect = (e) => {
+    resolve(userPin);
+    setIsLoading(true);
   };
 
   return (
     <div>
+      <div className="modal-description">Connect to {dApp}</div>
       {/** Email */}
-      <div className="modal-section">
-        {email}
-      </div>
-
+      <Input label="Email Address" defaultValue={email} disabled={true} />
+      <br />
       {/** User Pin */}
-      <input
-        onChange={handleUserPin}
-        type="text"
+      <Input
+        label="User Pin"
         placeholder="e.g 1234"
         disabled={isLoading}
+        onChange={setUserPin}
       />
+      <div
+        style={{ marginTop: '32px', display: 'flex', justifyContent: 'center' }}
+      >
+        <PrimaryButton
+          loading={isLoading}
+          disabled={isLoading}
+          onClick={handleConnect}
+        >
+          Connect
+        </PrimaryButton>
+      </div>
     </div>
   );
 };
