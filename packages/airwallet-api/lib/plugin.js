@@ -263,16 +263,28 @@ class WalletPlugin {
    * @returns Promise<LoggedInUser { email: string, autoconnect: boolean }>
    */
   _getLoggedInUser = () => {
-    return new Promise((resolve, reject) => {
-      this._sendEvent({ event: MetaphiIframe.GET_LOGGED_IN_USER }, ({loggedInUser, err}) => {
-        if (err) reject(err)
-        resolve(loggedInUser)
-      });
+    console.log('_getLoggedInUser')
+
+    let res, rej
+    const promise =  new Promise((resolve, reject) => {
+      res = resolve
+      rej = reject
     })
+
+    console.log('Sending Event: ', MetaphiIframe.GET_LOGGED_IN_USER)
+    this._sendEvent({ event: MetaphiIframe.GET_LOGGED_IN_USER }, ({ loggedInUser, err }) => {
+      console.log("Callback: ", loggedInUser, err)
+      if (err) return rej(err)
+      return res(loggedInUser)
+    });
+
+
+    return promise
   }
 
   // Event
   _login = async () => {
+    console.log("Event: _login")
     let email
     // Case 1. User is already logged-in. 
     // If the user is logged-in, Metaphi will have the emailId
@@ -312,12 +324,14 @@ class WalletPlugin {
 
   // Event listener
   _handleLogin = (payload) => {
+    console.log('Handling Login: ', payload)
     if (payload.err) {
       console.log(`Error: ${payload.err}`);
       return;
     }
 
     if (payload.verified) {
+      console.log('Login is verfied: ', payload)
       // Trigger connect step.
       return this._connect(payload.email, payload.autoconnect);
     }
@@ -361,6 +375,7 @@ class WalletPlugin {
 
   // Event.
   _connect = async (email, autoconnect) => {
+    console.log(`Connect event: ${email} | ${autoconnect}`)
     let userPin
     if (!autoconnect) {
       userPin = await this.getUserInput(MetaphiInputTypes.USER_PIN);

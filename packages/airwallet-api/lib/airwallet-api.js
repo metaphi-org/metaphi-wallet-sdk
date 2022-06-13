@@ -123,8 +123,10 @@ class MetaphiWalletApi {
 
   /* Public methods */
   // Login Metaphi wallet
-  login = async (userId, userPin) => {
-    this._logger(`Logging in: ${userId}.`);
+  login = async (userId, userPinInput) => {
+    let userPin = userPinInput || this._getCachedPin()
+
+    this._logger(`Logging in: ${userId} | ${userPin}`);
 
     let response = { verified: false };
 
@@ -295,6 +297,7 @@ class MetaphiWalletApi {
   // Connect wallet.
   connect = async (userPin) => {
     let pin = userPin || this._getCachedPin()
+    console.log('Connecting wallet with pin: ', pin)
 
     // Connect wallet.
     this._logger("Connecting wallet.");
@@ -305,11 +308,11 @@ class MetaphiWalletApi {
       return 
     }
 
-    await this._connectWallet(userPin);
+    await this._connectWallet(pin);
     if (this._publicAddress && this._privateKey) {
       this._logger("Wallet reconstruction successful. Wallet connected.");
       console.log('Caching pin.')
-      this._setCachedPin(userPin)
+      this._setCachedPin(pin)
     } else {
       this._logger(`Error connecting wallet.`);
       throw new Error("Wallet Reconstruction Unsuccessful.");

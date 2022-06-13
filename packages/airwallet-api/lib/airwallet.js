@@ -19,8 +19,8 @@ class MetaphiWallet {
    * @param {String} userId - Email or phone.
    * @returns {Object}
    */
-  login = async (userId) => {
-    return await this[s_wallet].login(userId);
+  login = async (userId, userPin) => {
+    return await this[s_wallet].login(userId, userPin);
   };
 
   /**
