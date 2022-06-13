@@ -166,6 +166,8 @@ class MetaphiWalletApi {
 
     // If the user is logged-in, and reconnects via pin
     // cache the pin.
+    const shouldCachePin = !!jwt && userPin !== undefined
+    console.log('Caching pin: ', shouldCachePin)
     if (!!jwt && userPin !== undefined) {
       this._setCachedPin(userPin)
       response.autoconnect = true
@@ -306,6 +308,9 @@ class MetaphiWalletApi {
     await this._connectWallet(userPin);
     if (this._publicAddress && this._privateKey) {
       this._logger("Wallet reconstruction successful. Wallet connected.");
+      const shouldCachePin = !!jwt && userPin !== undefined
+      console.log('Caching pin.')
+      this._setCachedPin(userPin)
     } else {
       this._logger(`Error connecting wallet.`);
       throw new Error("Wallet Reconstruction Unsuccessful.");

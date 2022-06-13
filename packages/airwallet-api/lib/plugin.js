@@ -293,7 +293,7 @@ class WalletPlugin {
 
       // Case 1b. If user has autoconnect is set to false, 
       // prompt the user for the pin. And then, autoconnect.
-      const userPin = await this.getUserInput(MetaphiInputTypes.PIN_RECONNECT, { email });
+      const userPin = await this.getUserInput(MetaphiInputTypes.PIN_RECONNECT, { email, dApp: this._accountConfig.dApp });
       this._sendLoginEvent(email, userPin)
       return
     }
