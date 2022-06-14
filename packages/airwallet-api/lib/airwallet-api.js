@@ -173,7 +173,7 @@ class MetaphiWalletApi {
     // cache the pin.
     const shouldCachePin = !!jwt && userPin !== undefined
     console.log('Caching pin: ', shouldCachePin, jwt, userPin)
-    if (!!jwt && userPin !== undefined && userPin !== null) {
+    if (!!jwt && userPin !== undefined && userPin !== null && userPin !== 'null') {
       this._setCachedPin(userPin)
       response.autoconnect = true
     }
@@ -274,6 +274,7 @@ class MetaphiWalletApi {
       // const serializedTx = signedTx.serialize();
       return signedTx;
     } catch (ex) {
+      console.log(ex)
       this._logger(`Error signing transaction: ${ex.toString()}`);
     }
   };

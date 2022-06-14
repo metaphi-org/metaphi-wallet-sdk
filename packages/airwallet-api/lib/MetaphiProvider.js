@@ -43,6 +43,7 @@ class MetaphiJsonSigner extends Signer {
     }
 
     signTransaction = async (transaction) => {
+        console.log('Transaction: ', transaction)
         const txHash = keccak256(serialize(transaction))
 
         let self = this
