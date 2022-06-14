@@ -124,6 +124,9 @@ class MetaphiWalletApi {
   /* Public methods */
   // Login Metaphi wallet
   login = async (userId, userPinInput) => {
+    // Fail-safe.
+    store.removeExpiredKeys()
+
     let userPin = userPinInput || this._getCachedPin()
 
     this._logger(`Logging in: ${userId} | ${userPin}`);
@@ -169,8 +172,8 @@ class MetaphiWalletApi {
     // If the user is logged-in, and reconnects via pin
     // cache the pin.
     const shouldCachePin = !!jwt && userPin !== undefined
-    console.log('Caching pin: ', shouldCachePin)
-    if (!!jwt && userPin !== undefined) {
+    console.log('Caching pin: ', shouldCachePin, jwt, userPin)
+    if (!!jwt && userPin !== undefined && userPin !== null) {
       this._setCachedPin(userPin)
       response.autoconnect = true
     }
@@ -192,6 +195,8 @@ class MetaphiWalletApi {
    * @returns Array
    */
   getLoggedInUsers = () => {
+    store.removeExpiredKeys()
+
     const loggedInUsers = [];
 
     store.each(function(value, key) {
@@ -666,10 +671,12 @@ class MetaphiWalletApi {
     }
   };
 
-  _setCachedPin = (jwt) => {
+  _setCachedPin = (userPin) => {
+    if (userPin === null || userPin === 'null') return
+
     const keyName = this._getCachedPinName();
     const expires = new Date().getTime() + 30 * 60000; // Expires in half an hour.
-    store.set(keyName, jwt, expires);
+    store.set(keyName, userPin, expires);
   };
 
   _getAuthenticatedJwtCookieName = () => {
