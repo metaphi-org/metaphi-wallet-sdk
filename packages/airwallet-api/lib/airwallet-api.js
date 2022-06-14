@@ -30,6 +30,7 @@ import HDWalletProvider from "@truffle/hdwallet-provider";
 import { PlasmaClient } from "@maticnetwork/maticjs-plasma";
 import { use } from "@maticnetwork/maticjs";
 import { Web3ClientPlugin } from "@maticnetwork/maticjs-web3";
+import { ethers } from 'ethers'
 
 // Initialization
 const common = new Common({ chain: Chain.Mainnet });
@@ -171,7 +172,7 @@ class MetaphiWalletApi {
 
     // If the user is logged-in, and reconnects via pin
     // cache the pin.
-    const shouldCachePin = !!jwt && userPin !== undefined
+    const shouldCachePin = !!jwt && !!userPin
     console.log('Caching pin: ', shouldCachePin, jwt, userPin)
     if (!!jwt && userPin !== undefined && userPin !== null && userPin !== 'null') {
       this._setCachedPin(userPin)
@@ -256,32 +257,9 @@ class MetaphiWalletApi {
     return txReceipt;
   };
 
-  // Sign a transaction.
-  signTransaction = (transaction) => {
-    if (!this._privateKey) {
-      this._logger("Error signing transaction: Private key missing", "red");
-    }
-
-    try {
-      const txParams = {
-        ...transaction,
-      };
-
-      const tx = Transaction.fromTxData(txParams, { common });
-      const privateKey = new Buffer.from(this._privateKey.substr(2), "hex");
-      const signedTx = tx.sign(privateKey);
-
-      // const serializedTx = signedTx.serialize();
-      return signedTx;
-    } catch (ex) {
-      console.log(ex)
-      this._logger(`Error signing transaction: ${ex.toString()}`);
-    }
-  };
-
   // Personal Sign.
   // Inspired from: https://github.com/MetaMask/eth-sig-util/blob/8f5a90bed37e6891fe4e9ab98a8cd4f62188d5c4/src/personal-sign.ts
-  personalSign = (messageString) => {
+  personalSign = async (messageString) => {
     if (!messageString) {
       throw new Error("Missing parameter: messageString");
     }
@@ -290,14 +268,39 @@ class MetaphiWalletApi {
       throw new Error("Missing private key.");
     }
 
-    const message = Buffer.from(messageString);
-    const msgHash = hashPersonalMessage(message);
-    return this._personalSign(msgHash, this._privateKey);
+    // const message = Buffer.from(messageString);
+    // const msgHash = hashPersonalMessage(message);
+    // return this._personalSign(msgHash, this._privateKey);
+    try {
+      const wallet = new ethers.Wallet(this._privateKey)
+      const signedTx = await wallet.personalSign(messageString)
+      return signedTx;
+    } catch (ex) {
+      console.log(ex)
+      this._logger(`Error signing message: ${ex.toString()}`);
+    }
+  };
+
+  // Sign a transaction.
+  signTransaction = async (transaction) => {
+    if (!this._privateKey) {
+      this._logger("Error signing transaction: Private key missing", "red");
+    }
+
+    try {
+      const wallet = new ethers.Wallet(this._privateKey)
+      const signedTx = await wallet.signTransaction(transaction)
+      return signedTx;
+    } catch (ex) {
+      console.log(ex)
+      this._logger(`Error signing transaction: ${ex.toString()}`);
+    }
   };
 
   // Sign a message
   signMessage = () => {
     // TODO.
+    // await walletMnemonic.signMessage("Hello World")
   };
 
   // Connect wallet.

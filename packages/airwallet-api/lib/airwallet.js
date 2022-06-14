@@ -67,8 +67,8 @@ class MetaphiWallet {
    * @param {Object} transaction object
    * @returns {String} signature
    */
-  signTransaction = (transaction) => {
-    return this[s_wallet].signTransaction(transaction);
+  signTransaction = async (transaction) => {
+    return await this[s_wallet].signTransaction(transaction);
   };
 
   /**
@@ -76,7 +76,7 @@ class MetaphiWallet {
    * @param {String} message
    * @returns {String} signed message
    */
-  personalSign = (message) => {
+  personalSign = async (message) => {
     return this[s_wallet].personalSign(message);
   };
 

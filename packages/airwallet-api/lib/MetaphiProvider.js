@@ -43,12 +43,9 @@ class MetaphiJsonSigner extends Signer {
     }
 
     signTransaction = async (transaction) => {
-        console.log('Transaction: ', transaction)
-        const txHash = keccak256(serialize(transaction))
-
         let self = this
         return new Promise((resolve, reject) => {
-            self.provider.getWallet().signMessage({ message: txHash }, ({ sig, err }) => {
+            self.provider.getWallet().signTransaction({ transaction: transaction }, ({ sig, err }) => {
                 console.log('Signed Transaction: ', sig)
                 if (sig) resolve(serialize(transaction, sig))
                 if (err) reject(err)

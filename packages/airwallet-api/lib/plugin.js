@@ -122,10 +122,9 @@ class WalletPlugin {
    * @param {Object} payload  { transaction: Object }
    * @param {Function} callback
    */
-  signTransaction = async (transaction, callback) => {
-    console.log("actual sign transaction function", transaction)
-    const payload = { transaction }
-    const ok = await this.getUserInput(MetaphiInputTypes.TRANSACTION_SIGN, transaction);
+  signTransaction = async (payload, callback) => {
+    const tx = { ...payload, address: this._wallet.address };
+    const ok = await this.getUserInput(MetaphiInputTypes.TRANSACTION_SIGN, tx);
     if (!ok) {
       if (callback) callback({ err: 'User didnot authorize signing.' });
     }
