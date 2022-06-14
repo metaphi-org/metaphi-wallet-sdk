@@ -10,7 +10,7 @@ import SuccessDialog from './modalContent/SuccessDialog.jsx';
 import ErrorDialog from './modalContent/ErrorDialog.jsx';
 import ConnectDialog from './modalContent/ConnectDialog.jsx';
 // Styles.
-// import "./styles/index.scss";
+import "./styles/index.scss";
 
 /**
  * React component to handle Metaphi Inputs and Dialog promts.
