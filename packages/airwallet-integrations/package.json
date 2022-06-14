@@ -10,7 +10,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "1.0.0-alpha.16",
+  "version": "1.0.0-alpha.17",
   "files": [
     "dist/*"
   ],
@@ -34,7 +34,7 @@
     "@web3-react/store": "^8.0.22-beta.0"
   },
   "peerDependencies": {
-    "@metaphi/airwallet-api": "^0.0.3-alpha.1",
-    "@metaphi/airwallet-ui": "^0.0.16"
+    "@metaphi/airwallet-api": "0.0.3-alpha.17",
+    "@metaphi/airwallet-ui": "0.0.17-alpha.4"
   }
 }
