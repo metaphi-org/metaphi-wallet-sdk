@@ -1,5 +1,5 @@
 import React from 'react';
-import { MetaphiInputTypes } from '@metaphi/airwallet-api';
+import { MetaphiInputTypes } from './constants';
 // Components.
 import MetaphiModal from './MetaphiModal.jsx';
 import LoginFormDialog from './modalContent/LoginFormDialog.jsx';
