@@ -12,6 +12,7 @@ const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
   useEffect(() => {
     let interval = null;
 
+    // HACK! Switch to communicating with iframe to update.
     if (isActive) {
       interval = setInterval(() => {
         if (timer % 2 === 0 && activeStep != 3) setActiveStep(activeStep + 1)
@@ -78,7 +79,7 @@ const ConnectionInitializationDialog = ({ walletAddress, resolve }) => {
             <div className={`bullet-description ${getBulletState(3) === 'active' ? 'bullet-description--loading' : ''}`}>
               <input
                 onChange={handleUserPin}
-                type="text"
+                type="password"
                 disabled={activeStep !== 3}
                 placeholder="e.g 1234"
               />

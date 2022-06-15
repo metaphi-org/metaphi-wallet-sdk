@@ -21,6 +21,7 @@ const ConnectDialog = ({ resolve, email, dApp }) => {
       <br />
       {/** User Pin */}
       <Input
+        type="password"
         label="User Pin"
         placeholder="e.g 1234"
         disabled={isLoading}

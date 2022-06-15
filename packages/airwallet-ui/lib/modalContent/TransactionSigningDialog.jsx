@@ -5,6 +5,7 @@ import PrimaryButton from "../components/PrimaryButton.jsx";
 const TransactionSigningDialog = (props) => {
   console.log(props)
  const {
+    transaction,
     resolve,
     address,
     balance,
@@ -12,6 +13,8 @@ const TransactionSigningDialog = (props) => {
     message,
     onClose
   } = props
+
+  const content = message || transaction?.data
 
   const handleClick = (value) => {
     if (typeof resolve === 'function') resolve(value)
@@ -38,7 +41,7 @@ const TransactionSigningDialog = (props) => {
       <div className="modal-section">
         <div className="message-box">
           <div className='modal-label'>Message:</div>
-          <div style={{textAlign: 'center'}} className='modal-text'>{message}</div>
+          <div style={{textAlign: 'center'}} className='modal-text'>{content}</div>
         </div>
       </div>
       <div className="modal-cta-wrapper wrapper-row">

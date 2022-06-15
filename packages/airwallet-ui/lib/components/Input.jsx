@@ -1,6 +1,7 @@
 import React from 'react';
 
 const Input = ({
+  type='text',
   defaultValue,
   placeholder = '',
   disabled = false,
@@ -15,7 +16,7 @@ const Input = ({
     <>
       <label>{label}</label>
       <input
-        type="text"
+        type={type}
         defaultValue={defaultValue}
         disabled={disabled}
         placeholder={placeholder}
