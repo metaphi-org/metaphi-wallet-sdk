@@ -47,7 +47,7 @@ type MetaphiConfigOptions = {
 declare global {
   interface Window {
     MetaphiModal: any;
-    mWallet: MetaphiWallet;
+    mWallet: MetaphiWallet | undefined;
   }
 }
 
@@ -86,23 +86,20 @@ class MetaphiConnector extends Connector {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const opts = {...this.options, custom: { userInputMethod: window.MetaphiModal }}
     this.mWalletInstance = new WalletPlugin(opts);
+    // Add Instance to window.
+    window.mWallet = this.mWalletInstance
 
     if (this.mWalletInstance === undefined) return Promise.reject(false)
 
     await this.mWalletInstance.init();
 
-    const self: MetaphiConnector = this;
-
     return new Promise<void>((resolve, reject) => {
       this.mWalletInstance?.connect(async (msg: { connected?: boolean }) => {
         console.log('Connector: Metaphi Wallet Connected.')
-        if (!self.mWalletInstance) { return reject() }
+        if (!this.mWalletInstance) { return reject() }
         if (!msg.connected) { return reject() }
   
-        this.provider = self.mWalletInstance.getProvider() as MetaphiProvider
-        
-        // Add Instance to window.
-        window.mWallet = self.mWalletInstance
+        this.provider = this.mWalletInstance.getProvider() as MetaphiProvider
         
         resolve()
       });

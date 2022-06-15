@@ -45,7 +45,7 @@ declare type MetaphiConfigOptions = {
 declare global {
     interface Window {
         MetaphiModal: any;
-        mWallet: MetaphiWallet;
+        mWallet: MetaphiWallet | undefined;
     }
 }
 declare module "@metaphi/airwallet-api";
