@@ -81,13 +81,17 @@ class MetaphiConnector extends Connector {
   }
 
   private async isomorphicInitialize(): Promise<void> {
+    console.log("Isomorphic Initializing...")
     if (this.serverSide) return Promise.reject(false); 
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const opts = {...this.options, custom: { userInputMethod: window.MetaphiModal }}
-    this.mWalletInstance = new WalletPlugin(opts);
-    // Add Instance to window.
-    window.mWallet = this.mWalletInstance
+
+    if (!this.mWalletInstance) {
+      this.mWalletInstance = new WalletPlugin(opts);
+      // Add Instance to window.
+      window.mWallet = this.mWalletInstance
+    }
 
     if (this.mWalletInstance === undefined) return Promise.reject(false)
 
