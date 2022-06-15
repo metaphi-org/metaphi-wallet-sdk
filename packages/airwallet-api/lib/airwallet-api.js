@@ -125,6 +125,9 @@ class MetaphiWalletApi {
   /* Public methods */
   // Login Metaphi wallet
   login = async (userId, userPinInput) => {
+    // Persist user id.
+    this._userId = userId;
+
     // Fail-safe.
     store.removeExpiredKeys()
 
@@ -132,10 +135,7 @@ class MetaphiWalletApi {
 
     this._logger(`Logging in: ${userId} | ${userPin}`);
 
-    let response = { verified: false };
-
-    // Persist user id.
-    this._userId = userId;
+    let response = { verified: false, autoconnect: false  };
 
     // Check if logged-in user. Skip verification, if true.
     let address;
@@ -273,7 +273,7 @@ class MetaphiWalletApi {
     // return this._personalSign(msgHash, this._privateKey);
     try {
       const wallet = new ethers.Wallet(this._privateKey)
-      const signedTx = await wallet.personalSign(messageString)
+      const signedTx = await wallet.signMessage(messageString)
       return signedTx;
     } catch (ex) {
       console.log(ex)
@@ -431,6 +431,7 @@ class MetaphiWalletApi {
     /** Empty Caches. */
     // Authentication
     this._resetAuthenticatedJwt();
+    this._resetCachedPin();
 
     /** Reset statics. */
     // Wallet Public Address
@@ -681,6 +682,11 @@ class MetaphiWalletApi {
     const keyName = this._getCachedPinName();
     const expires = new Date().getTime() + 30 * 60000; // Expires in half an hour.
     store.set(keyName, userPin, expires);
+  };
+
+  _resetCachedPin = () => {
+    const keyName = this._getCachedPinName();
+    store.remove(keyName);
   };
 
   _getAuthenticatedJwtCookieName = () => {

@@ -43,11 +43,12 @@ class MetaphiJsonSigner extends Signer {
     }
 
     signTransaction = async (transaction) => {
+        console.log('Sign Transaction from Provider: ', transaction)
         let self = this
         return new Promise((resolve, reject) => {
             self.provider.getWallet().signTransaction({ transaction: transaction }, ({ sig, err }) => {
                 console.log('Signed Transaction: ', sig)
-                if (sig) resolve(serialize(transaction, sig))
+                if (sig) resolve(sig)
                 if (err) reject(err)
             })
         })

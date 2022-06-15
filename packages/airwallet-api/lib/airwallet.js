@@ -77,7 +77,7 @@ class MetaphiWallet {
    * @returns {String} signed message
    */
   personalSign = async (message) => {
-    return this[s_wallet].personalSign(message);
+    return await this[s_wallet].personalSign(message);
   };
 
   /**

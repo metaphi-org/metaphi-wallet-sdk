@@ -113,7 +113,7 @@ class WalletPlugin {
     if (!ok) {
       if (callback) callback({ err: 'User didnot authorize signing.' });
     }
-
+    console.log('Sending event: signMessage ', payload)
     this._sendEvent({ event: 'signMessage', payload }, callback);
   };
 
@@ -128,7 +128,7 @@ class WalletPlugin {
     if (!ok) {
       if (callback) callback({ err: 'User didnot authorize signing.' });
     }
-
+    console.log('Sending event: signTransaction ', payload)
     this._sendEvent({ event: 'signTransaction', payload }, callback);
   };
 
@@ -330,7 +330,7 @@ class WalletPlugin {
     }
 
     if (payload.verified) {
-      console.log('Login is verfied: ', payload)
+      console.log('Login is verified: ', payload)
       // Trigger connect step.
       return this._connect(payload.email, payload.autoconnect);
     }
