@@ -52,6 +52,7 @@ declare global {
 }
 
 declare module "@metaphi/airwallet-api";
+
 class MetaphiConnector extends Connector {
   /** {@inheritdoc Connector.provider} */
   declare public provider: MetaphiProvider | undefined
@@ -72,7 +73,7 @@ class MetaphiConnector extends Connector {
 
     // console.log("Metaphi Wallet Configuration")
     this.options = options
-    // if (connectEagerly) void this.connectEagerly()
+    if (connectEagerly) void this.connectEagerly()
   }
 
   private get serverSide() {
@@ -88,29 +89,24 @@ class MetaphiConnector extends Connector {
 
     if (this.mWalletInstance === undefined) return Promise.reject(false)
 
-    this.mWalletInstance.init();
+    await this.mWalletInstance.init();
 
-    let resolve: () => void
-    let reject: () => void
-    const myPromise = new Promise<void>((res, rej) => {
-      resolve = res
-      reject = rej
-    });
-    
     const self: MetaphiConnector = this;
-    this.mWalletInstance.connect(async (msg: { connected?: boolean }) => {
-      if (!self.mWalletInstance) { return reject() }
-      if (!msg.connected) { return reject() }
 
-      this.provider = self.mWalletInstance.getProvider() as MetaphiProvider
-      
-      // Add Instance to window.
-      window.mWallet = self.mWalletInstance
-      
-      resolve()
+    return new Promise<void>((resolve, reject) => {
+      this.mWalletInstance?.connect(async (msg: { connected?: boolean }) => {
+        console.log('Connector: Metaphi Wallet Connected.')
+        if (!self.mWalletInstance) { return reject() }
+        if (!msg.connected) { return reject() }
+  
+        this.provider = self.mWalletInstance.getProvider() as MetaphiProvider
+        
+        // Add Instance to window.
+        window.mWallet = self.mWalletInstance
+        
+        resolve()
+      });
     });
-
-    return myPromise
   }
 
   /** {@inheritdoc Connector.connectEagerly} */
@@ -120,8 +116,8 @@ class MetaphiConnector extends Connector {
     await this.isomorphicInitialize()
     if (!this.provider || !this.mWalletInstance) return cancelActivation()
 
+    const chainId = this.mWalletInstance.getChainId()
     const accounts: string[] = [this.mWalletInstance.getAddress()]
-    const chainId = 80001 // this.mWalletInstance.getChainId()
     return this.actions.update({ accounts, chainId })
   }
 

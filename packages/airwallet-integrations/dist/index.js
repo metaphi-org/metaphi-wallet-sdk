@@ -22,7 +22,8 @@ class MetaphiConnector extends Connector {
         }
         // console.log("Metaphi Wallet Configuration")
         this.options = options;
-        // if (connectEagerly) void this.connectEagerly()
+        if (connectEagerly)
+            void this.connectEagerly();
     }
     get serverSide() {
         return typeof window === 'undefined';
@@ -36,27 +37,24 @@ class MetaphiConnector extends Connector {
             this.mWalletInstance = new WalletPlugin(opts);
             if (this.mWalletInstance === undefined)
                 return Promise.reject(false);
-            this.mWalletInstance.init();
-            let resolve;
-            let reject;
-            const myPromise = new Promise((res, rej) => {
-                resolve = res;
-                reject = rej;
-            });
+            yield this.mWalletInstance.init();
             const self = this;
-            this.mWalletInstance.connect((msg) => __awaiter(this, void 0, void 0, function* () {
-                if (!self.mWalletInstance) {
-                    return reject();
-                }
-                if (!msg.connected) {
-                    return reject();
-                }
-                this.provider = self.mWalletInstance.getProvider();
-                // Add Instance to window.
-                window.mWallet = self.mWalletInstance;
-                resolve();
-            }));
-            return myPromise;
+            return new Promise((resolve, reject) => {
+                var _a;
+                (_a = this.mWalletInstance) === null || _a === void 0 ? void 0 : _a.connect((msg) => __awaiter(this, void 0, void 0, function* () {
+                    console.log('Connector: Metaphi Wallet Connected.');
+                    if (!self.mWalletInstance) {
+                        return reject();
+                    }
+                    if (!msg.connected) {
+                        return reject();
+                    }
+                    this.provider = self.mWalletInstance.getProvider();
+                    // Add Instance to window.
+                    window.mWallet = self.mWalletInstance;
+                    resolve();
+                }));
+            });
         });
     }
     /** {@inheritdoc Connector.connectEagerly} */
@@ -66,8 +64,8 @@ class MetaphiConnector extends Connector {
             yield this.isomorphicInitialize();
             if (!this.provider || !this.mWalletInstance)
                 return cancelActivation();
+            const chainId = this.mWalletInstance.getChainId();
             const accounts = [this.mWalletInstance.getAddress()];
-            const chainId = 80001; // this.mWalletInstance.getChainId()
             return this.actions.update({ accounts, chainId });
         });
     }
