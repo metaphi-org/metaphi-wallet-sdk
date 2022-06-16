@@ -81,28 +81,27 @@ class MetaphiConnector extends Connector {
     return typeof window === 'undefined'
   }
 
-  public addPlugin() {
-    if (!this.serverSide) {
+  public async addPlugin() {
+    if (!this.serverSide && !this.mWalletInstance) {
+      console.log('Adding metaphi plugin.')
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const opts = {...this.options, custom: { userInputMethod: window.MetaphiModal }}
 
-      if (!this.mWalletInstance) {
-        this.mWalletInstance = new WalletPlugin(opts);
-        // Add Instance to window.
-        window.mWallet = this.mWalletInstance
-      }
+      this.mWalletInstance = new WalletPlugin(opts);
+      await this.mWalletInstance?.init();
+
+      // Add Instance to window.
+      window.mWallet = this.mWalletInstance
     }
   }
 
   private async isomorphicInitialize(): Promise<void> {
-    console.log("Isomorphic Initializing...")
+    console.log("Isomorphic Initializing.")
     if (this.serverSide) return Promise.reject(false); 
 
     // Add iframe and plugin instance.
-    this.addPlugin()
+    await this.addPlugin()
     if (this.mWalletInstance === undefined) return Promise.reject(false)
-
-    await this.mWalletInstance.init();
 
     return new Promise<void>((resolve, reject) => {
       this.mWalletInstance?.connect(async (msg: { connected?: boolean }) => {

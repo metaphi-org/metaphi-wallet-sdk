@@ -29,26 +29,28 @@ class MetaphiConnector extends Connector {
         return typeof window === 'undefined';
     }
     addPlugin() {
-        if (!this.serverSide) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const opts = Object.assign(Object.assign({}, this.options), { custom: { userInputMethod: window.MetaphiModal } });
-            if (!this.mWalletInstance) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.serverSide && !this.mWalletInstance) {
+                console.log('Adding metaphi plugin.');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const opts = Object.assign(Object.assign({}, this.options), { custom: { userInputMethod: window.MetaphiModal } });
                 this.mWalletInstance = new WalletPlugin(opts);
+                yield ((_a = this.mWalletInstance) === null || _a === void 0 ? void 0 : _a.init());
                 // Add Instance to window.
                 window.mWallet = this.mWalletInstance;
             }
-        }
+        });
     }
     isomorphicInitialize() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Isomorphic Initializing...");
+            console.log("Isomorphic Initializing.");
             if (this.serverSide)
                 return Promise.reject(false);
             // Add iframe and plugin instance.
-            this.addPlugin();
+            yield this.addPlugin();
             if (this.mWalletInstance === undefined)
                 return Promise.reject(false);
-            yield this.mWalletInstance.init();
             return new Promise((resolve, reject) => {
                 var _a;
                 (_a = this.mWalletInstance) === null || _a === void 0 ? void 0 : _a.connect((msg) => __awaiter(this, void 0, void 0, function* () {
