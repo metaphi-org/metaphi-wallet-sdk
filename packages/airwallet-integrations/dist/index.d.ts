@@ -52,6 +52,7 @@ declare module "@metaphi/airwallet-api";
 declare class MetaphiConnector extends Connector {
     /** {@inheritdoc Connector.provider} */
     provider: MetaphiProvider | undefined;
+    customProvider: MetaphiProvider | undefined;
     private options;
     private mWalletInstance;
     /**

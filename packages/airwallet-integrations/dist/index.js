@@ -54,6 +54,7 @@ class MetaphiConnector extends Connector {
                         return reject();
                     }
                     this.provider = this.mWalletInstance.getProvider();
+                    this.customProvider = this.provider;
                     resolve();
                 }));
             });
