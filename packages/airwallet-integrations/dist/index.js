@@ -28,11 +28,8 @@ class MetaphiConnector extends Connector {
     get serverSide() {
         return typeof window === 'undefined';
     }
-    isomorphicInitialize() {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log("Isomorphic Initializing...");
-            if (this.serverSide)
-                return Promise.reject(false);
+    addPlugin() {
+        if (!this.serverSide) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const opts = Object.assign(Object.assign({}, this.options), { custom: { userInputMethod: window.MetaphiModal } });
             if (!this.mWalletInstance) {
@@ -40,6 +37,15 @@ class MetaphiConnector extends Connector {
                 // Add Instance to window.
                 window.mWallet = this.mWalletInstance;
             }
+        }
+    }
+    isomorphicInitialize() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("Isomorphic Initializing...");
+            if (this.serverSide)
+                return Promise.reject(false);
+            // Add iframe and plugin instance.
+            this.addPlugin();
             if (this.mWalletInstance === undefined)
                 return Promise.reject(false);
             yield this.mWalletInstance.init();

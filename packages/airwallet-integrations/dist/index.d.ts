@@ -60,7 +60,8 @@ declare class MetaphiConnector extends Connector {
      * @param options - Options to pass to `@metamask/detect-provider`
      */
     constructor(actions: Actions, connectEagerly: boolean | undefined, options: MetaphiConfigOptions);
-    private get serverSide();
+    get serverSide(): boolean;
+    addPlugin(): void;
     private isomorphicInitialize;
     /** {@inheritdoc Connector.connectEagerly} */
     connectEagerly(): Promise<void>;
