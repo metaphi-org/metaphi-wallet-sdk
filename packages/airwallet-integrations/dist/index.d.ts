@@ -61,7 +61,7 @@ declare class MetaphiConnector extends Connector {
      */
     constructor(actions: Actions, connectEagerly: boolean | undefined, options: MetaphiConfigOptions);
     get serverSide(): boolean;
-    addPlugin(): Promise<void>;
+    addPlugin(): Promise<unknown>;
     private isomorphicInitialize;
     /** {@inheritdoc Connector.connectEagerly} */
     connectEagerly(): Promise<void>;

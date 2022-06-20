@@ -29,9 +29,12 @@ class MetaphiConnector extends Connector {
         return typeof window === 'undefined';
     }
     addPlugin() {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            if (!this.serverSide && !this.mWalletInstance) {
+            const loadPlugin = !this.serverSide && !this.mWalletInstance;
+            if (!loadPlugin)
+                return Promise.reject(false);
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                var _a;
                 console.log('Adding metaphi plugin.');
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const opts = Object.assign(Object.assign({}, this.options), { custom: { userInputMethod: window.MetaphiModal } });
@@ -39,7 +42,35 @@ class MetaphiConnector extends Connector {
                 yield ((_a = this.mWalletInstance) === null || _a === void 0 ? void 0 : _a.init());
                 // Add Instance to window.
                 window.mWallet = this.mWalletInstance;
-            }
+                try {
+                    function checkIframeLoaded() {
+                        var _a;
+                        // Get a handle to the iframe element
+                        const iframe = document.getElementById('mWalletPlugin');
+                        if (!iframe)
+                            return false;
+                        // @ts-ignore
+                        const iframeDoc = iframe.contentDocument || ((_a = iframe === null || iframe === void 0 ? void 0 : iframe.contentWindow) === null || _a === void 0 ? void 0 : _a.document);
+                        // Check if loading is complete
+                        if (iframeDoc.readyState == 'complete') {
+                            // @ts-ignore
+                            iframe.contentWindow.onload = function () {
+                                console.log('Metaphi Iframe loaded');
+                            };
+                            // The loading is complete, call the function we want executed once the iframe is loaded
+                            return resolve(true);
+                            ;
+                        }
+                    }
+                    checkIframeLoaded();
+                    // If we are here, it is not loaded. Set things up so we check   the status again in 100 milliseconds
+                    window.setTimeout(checkIframeLoaded, 100);
+                }
+                catch (ex) {
+                    console.log('Error checking iframe', ex);
+                    resolve(true);
+                }
+            }));
         });
     }
     isomorphicInitialize() {
