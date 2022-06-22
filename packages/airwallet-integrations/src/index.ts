@@ -81,7 +81,7 @@ class MetaphiConnector extends Connector {
     return typeof window === 'undefined'
   }
 
-  public async addPlugin() {
+  public async addPlugin(): Promise<boolean> {
     const loadPlugin = !this.serverSide && !this.mWalletInstance
     if (!loadPlugin) return Promise.reject(false)
    
@@ -92,39 +92,11 @@ class MetaphiConnector extends Connector {
 
       this.mWalletInstance = new WalletPlugin(opts);
       await this.mWalletInstance?.init();
-
         
       // Add Instance to window.
       window.mWallet = this.mWalletInstance
-
-      try {
-        function checkIframeLoaded() {
-          // Get a handle to the iframe element
-          const iframe = document.getElementById('mWalletPlugin');
-          if (!iframe) return false
-  
-          // @ts-ignore
-          const iframeDoc = iframe.contentDocument || iframe?.contentWindow?.document;
-  
-          // Check if loading is complete
-          if (  iframeDoc.readyState  == 'complete' ) {
-              // @ts-ignore
-              iframe.contentWindow.onload = function(){
-                console.log('Metaphi Iframe loaded')
-              };
-              // The loading is complete, call the function we want executed once the iframe is loaded
-              return resolve(true);;
-          } 
-        }
-  
-        checkIframeLoaded()
-        // If we are here, it is not loaded. Set things up so we check   the status again in 100 milliseconds
-        window.setTimeout(checkIframeLoaded, 100);        
-
-      } catch (ex) {
-        console.log('Error checking iframe', ex)
-        resolve(true)
-      }
+      
+      resolve(true)
     })
   }
 
