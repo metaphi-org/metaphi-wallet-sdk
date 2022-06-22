@@ -38,14 +38,16 @@ class WalletPlugin {
 
   /** Public Functions */
   // Client-side only.
-  init = () => {
+  init = async () => {
     if (!global.window) {
       throw new Error('Metaphi Wallet should be initialized client-side.');
     }
 
-    const embed = document.getElementById(WALLET_EMBED_ID);
-    const root = document.getElementById('mWalletContainer');
-    if (!embed) {
+    return new Promise((resolve, reject) => {
+      const embed = document.getElementById(WALLET_EMBED_ID);
+
+      if (!!embed) return resolve(true)
+
       // Setup iframe.
       const ifrm = document.createElement('iframe');
       ifrm.setAttribute('id', WALLET_EMBED_ID);
@@ -54,13 +56,18 @@ class WalletPlugin {
       ifrm.setAttribute('height', 0);
       ifrm.setAttribute('width', 0);
       ifrm.setAttribute('style', 'position: absolute; top: 0; left: 0;');
-      root.appendChild(ifrm); // to place at end of document
+      document.getElementById('mWalletContainer').appendChild(ifrm); // to place at end of document
+
+      this._isLoaded = true;
 
       // Setup listener, for callbacks.
       window.addEventListener('message', this._receiveMessage);
 
-      this._isLoaded = true;
-    }
+      // If embed doesn't exist, wait for iframe to load before resolving.
+      ifrm.addEventListener("load", function() {
+        resolve(true)
+      });
+    })
   };
 
   // Client-side only.
