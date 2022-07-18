@@ -70,5 +70,5 @@ export function getMetaphiIframeDomain (env) {
     return 'http://localhost:8080'
   }
 
-  return 'https://metaphi.xyz'
+  return 'https://www.metaphi.xyz'
 }
