@@ -2,7 +2,7 @@ import React from "react";
 import CloseIcon from "./assets/close.svg";
 // import MetaphiLogo from "./assets/metaphi-logo.png";
 
-const LOGO_URL = 'https://metaphi.xyz/_next/static/media/logo.08901042.png'
+const LOGO_URL = 'https://www.metaphi.xyz/logo.png'
 /**
  * Wrapper component for modal.
  *
